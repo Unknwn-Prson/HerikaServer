@@ -1927,14 +1927,23 @@ function llmClamp(rangeId, numberId, min, max){ const r = document.getElementByI
  ?>
 
 <script>
-// Note: Reasoning fields (toggle_thinking, thinking_tokens, effort_level) are now submitted
-// directly via form name attributes (metadata[toggle_thinking], etc.) and no longer need
-// JavaScript manipulation. This wrapper just ensures the original consolidation() runs.
+// Safely wrap consolidation() from metadata_json_editor.php
+// The reasoning fields (toggle_thinking, thinking_tokens, effort_level) now have proper
+// name="metadata[...]" attributes and are submitted directly via form POST.
+// This wrapper ensures the original consolidation() runs safely even when
+// the metadata JSON editor doesn't exist on this page.
 (function(){
     const originalConsolidation = window.consolidation;
     window.consolidation = function() {
         // Run the original consolidation (from metadata_json_editor.php if present)
-        return originalConsolidation ? originalConsolidation() : true;
+        // It may try to access jsonEditor which doesn't exist on llm_connectors.php
+        try {
+            return originalConsolidation ? originalConsolidation() : true;
+        } catch (err) {
+            // If metadata JSON editor doesn't exist, that's fine - fields submit via form POST
+            console.log('Consolidation skipped (metadata editor not present):', err.message);
+            return true;
+        }
     };
 })();
 
