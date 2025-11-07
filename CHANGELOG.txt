@@ -29,11 +29,20 @@ Critical Bug Fixes:
   - Modified: connector/openrouterjsoncached.php (line 582)
   - Modified: connector/openrouterjsoncached_verbose.php (line 867)
 
+✓ **BUG #4: Fixed thinking/reasoning settings not being saved**
+  - Problem: Toggle thinking, thinking tokens, and effort level settings didn't save
+  - Impact: Users couldn't enable or configure reasoning features
+  - Root Cause: Form fields missing name attributes, weren't submitted with form POST
+  - Fix: Added proper name="metadata[field_name]" attributes to all three fields
+  - Modified: ui/core/llm_connectors.php (lines 374-375, 380, 383, 1391-1392, 1397, 1400)
+  - Removed: Obsolete JavaScript code that tried to manipulate metadata
+
 Files Modified:
 ---------------
 • connector/openrouterjsoncached.php - Cache filename fix, prefill extension
 • connector/openrouterjsoncached_verbose.php - Cache filename fix, prefill extension
 • connector/openrouterjsoncached_helpers.php - Custom instruction handling
+• ui/core/llm_connectors.php - Fixed thinking settings form submission
 
 Benefits:
 ---------
@@ -41,6 +50,7 @@ Benefits:
 • No more format instruction mixing between JSON and simple modes
 • All caching providers (Anthropic, OpenAI, Gemini) support prefill
 • Users can switch between formats without cache contamination
+• Thinking/reasoning settings now save and persist correctly
 
 Version 1.0.8 (2025-11-06)
 --------------------------
