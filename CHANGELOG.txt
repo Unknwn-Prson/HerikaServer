@@ -19,7 +19,7 @@ Critical Bug Fixes:
   - Root Cause: writeArrayToFileWithCache() returned old cached data with wrong format
   - Fix: Cache filenames now include response format in the name
   - Modified: connector/openrouterjsoncached.php (lines 349-350)
-  - Modified: connector/openrouterjsoncached_verbose.php (lines 408-409)
+  - Modified: connector/openrouterjsoncached_verbose.php (lines 402-403)
   - Result: Different formats now use separate cache files
 
 ✓ **BUG #3: Extended prefill support to all caching providers**
@@ -27,7 +27,7 @@ Critical Bug Fixes:
   - Impact: OpenAI and Gemini users couldn't use simple format prefill
   - Fix: Removed provider check, now all providers get prefill in simple format
   - Modified: connector/openrouterjsoncached.php (line 582)
-  - Modified: connector/openrouterjsoncached_verbose.php (line 884)
+  - Modified: connector/openrouterjsoncached_verbose.php (line 867)
 
 Files Modified:
 ---------------
