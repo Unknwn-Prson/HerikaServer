@@ -365,7 +365,8 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                     $tmpMeta = json_decode($editItem["metadata"], true);
                     if (is_array($tmpMeta)) $metadataArr = $tmpMeta;
                 }
-                $toggleThinking = isset($metadataArr["toggle_thinking"]) && ($metadataArr["toggle_thinking"] === true || $metadataArr["toggle_thinking"] === 'true' || $metadataArr["toggle_thinking"] === 1);
+                // Use same pattern as other checkboxes for proper boolean/string/int handling
+                $toggleThinking = isset($metadataArr["toggle_thinking"]) && $metadataArr["toggle_thinking"];
                 $thinkingTokens = $metadataArr["thinking_tokens"] ?? '';
                 $effortLevel = $metadataArr["effort_level"] ?? '';
                 ?>

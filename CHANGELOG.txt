@@ -5,8 +5,8 @@ CHIM CACHED CONNECTOR - VERSION HISTORY
 Version 1.0.10 (2025-11-07)
 ---------------------------
 
-Bug Fix & Code Safety:
-----------------------
+Bug Fixes & Code Safety:
+------------------------
 ✓ **Restored safety wrapper for consolidation() function**
   - Problem: Removed JavaScript wrapper could cause errors on form submission
   - Impact: metadata_json_editor.php consolidation() tries to access non-existent jsonEditor
@@ -14,9 +14,16 @@ Bug Fix & Code Safety:
   - Modified: ui/core/llm_connectors.php (lines 1930-1948)
   - Note: Thinking fields still submit correctly via name="metadata[...]" attributes
 
+✓ **Fixed toggle thinking checkbox unchecking after save**
+  - Problem: Toggle thinking checkbox value not recognized when reading from database
+  - Impact: Checkbox would uncheck itself immediately after saving
+  - Root Cause: Used strict comparison (===) but checkbox sends string "1", not integer 1
+  - Fix: Changed to truthy check matching other checkboxes pattern
+  - Modified: ui/core/llm_connectors.php (line 369)
+
 Files Modified:
 ---------------
-• ui/core/llm_connectors.php - Added safety wrapper for consolidation function
+• ui/core/llm_connectors.php - Added safety wrapper & fixed toggle thinking checkbox
 
 Version 1.0.9 (2025-11-07)
 --------------------------
