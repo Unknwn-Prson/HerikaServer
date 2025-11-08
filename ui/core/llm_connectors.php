@@ -1252,6 +1252,17 @@ if (typeof window.consolidation !== 'function') {
     window.consolidation = function(){ return true; };
 }
 </script>
+<?php
+// Parse metadata for main editor form (same as partial editor)
+$metadataArr = [];
+if (isset($editItem["metadata"]) && !empty($editItem["metadata"])) {
+    $tmpMeta = json_decode($editItem["metadata"], true);
+    if (is_array($tmpMeta)) $metadataArr = $tmpMeta;
+}
+$toggleThinking = isset($metadataArr["toggle_thinking"]) && $metadataArr["toggle_thinking"];
+$thinkingTokens = $metadataArr["thinking_tokens"] ?? '';
+$effortLevel = $metadataArr["effort_level"] ?? '';
+?>
 <form method="post" onsubmit='return consolidation()' style='<?= $editItem!=null?"":"display:none"?>'>
     <?php if ($editItem): ?>
         <input type="hidden" name="id" value="<?= $editItem["id"] ?>">

@@ -5,11 +5,11 @@ require_once($enginePath . "lib" .DIRECTORY_SEPARATOR."tokenizer_helper_function
 
 // Cached version of openrouterjson connector with Anthropic/OpenAI/Gemini cache support
 // Based on CHIM 2.0 architecture with additional caching and response format features
-// Version: 1.0.0 (2025-11-05)
 
 class openrouterjsoncached
 {
-    const VERSION = '1.0.0';
+    // ⚠️ IMPORTANT: Please update version number, date, and CHIM version after making changes
+    const VERSION = 'OpenRouter Cache Connector v1.0.11 for CHIM 2.0.3 | 2025/11/08';
 
     public $primary_handler;
     public $name;
@@ -345,8 +345,9 @@ class openrouterjsoncached
                                  $customInstruction, $lastCustomInstruction, $toggleThinking, $thinkingTokens,
                                  $effort_level, $CONTEXTHISTORY, $dialogue_cache_uncached_count, $start_time) {
 
-        $cacheSystemFile = "system_cache_json_{$herikaName}.tmp";
-        $cacheCombinedDialogueFile = "combined_dialogue_cache_json_{$herikaName}.tmp";
+        // BUG#2 FIX: Include response format in cache filename so different formats use different cache files
+        $cacheSystemFile = "system_cache_{$this->_responseFormat}_{$herikaName}.tmp";
+        $cacheCombinedDialogueFile = "combined_dialogue_cache_{$this->_responseFormat}_{$herikaName}.tmp";
         $cacheControlType = ["type" => "ephemeral", "ttl" => "1h"];
 
         // Build actions and response format instruction
@@ -577,7 +578,8 @@ class openrouterjsoncached
         logMessage("Estimated token count: $tokenCount");
 
         // NOW add to finalMessagesToSend after all modifications are complete
-        if ($this->_responseFormat === 'simple' && $this->_provider_caching === "Anthropic") {
+        // BUG#3 FIX: Enable prefill for all caching providers, not just Anthropic
+        if ($this->_responseFormat === 'simple') {
             $finalMessagesToSend[] = array('role' => 'user', 'content' => $completeEventList);
             $prefillText = '(';
             $finalMessagesToSend[] = array('role' => 'assistant', 'content' => array(
