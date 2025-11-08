@@ -2,6 +2,39 @@
 CHIM CACHED CONNECTOR - VERSION HISTORY
 ===============================================================================
 
+Version 1.0.12 (2025-11-08)
+---------------------------
+
+Critical Bug Fix:
+-----------------
+✓ **Fixed actions not respecting FUNCTIONS_ARE_ENABLED in simple format**
+
+  Problem: Actions were included in simple format even when FUNCTIONS_ARE_ENABLED was false
+  - Impact: Actions would appear in simple format responses/instructions regardless of
+    whether actions were globally enabled, causing LLM confusion when actions disabled
+  - Root Cause: _includeActions property only checked connector config setting
+    (include_actions_list), but didn't check global FUNCTIONS_ARE_ENABLED flag
+  - Expected Behavior: Actions should only be included when BOTH conditions are true:
+    1. FUNCTIONS_ARE_ENABLED global is set and true
+    2. Connector config allows it (include_actions_list)
+  - Fix: Updated _includeActions initialization to check FUNCTIONS_ARE_ENABLED first,
+    matching JSON format behavior in functions/json_response.php:28-59
+  - Modified: connector/openrouterjsoncached.php (lines 314-317)
+  - Modified: connector/openrouterjsoncached_verbose.php (lines 329-332)
+
+Files Modified:
+---------------
+• connector/openrouterjsoncached.php - Added FUNCTIONS_ARE_ENABLED check, updated version to v1.0.12
+• connector/openrouterjsoncached_verbose.php - Added FUNCTIONS_ARE_ENABLED check, updated version to v1.0.12
+
+Technical Notes:
+----------------
+- This matches the pattern used in JSON format where setActions() checks
+  $GLOBALS["FUNCTIONS_ARE_ENABLED"] before appending to COMMAND_PROMPT
+- When FUNCTIONS_ARE_ENABLED is false, _includeActions will be false, causing:
+  1. buildSimpleFormatInstruction() to exclude action fields from format
+  2. availableActions to stay empty (not appended to prompt)
+
 Version 1.0.11 (2025-11-08)
 ---------------------------
 
