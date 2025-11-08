@@ -5,29 +5,44 @@ CHIM CACHED CONNECTOR - VERSION HISTORY
 Version 1.0.11 (2025-11-08)
 ---------------------------
 
-Critical Bug Fix:
------------------
-✓ **Fixed toggle thinking checkbox not persisting in main editor**
-  - Problem: Toggle thinking checkbox didn't save when using main editor (non-iframe)
-  - Impact: Checkbox would always appear unchecked after page reload, regardless of saved value
-  - Root Cause: Metadata parsing variables ($toggleThinking, $thinkingTokens, $effortLevel) were
-    only initialized for the embedded editor (partial=editor) but not for the main editor form
+Critical Bug Fixes:
+-------------------
+✓ **Fixed thinking/reasoning settings not saving properly (Complete Fix)**
+
+  Problem 1 - Form fields missing name attributes:
+  - Impact: Toggle thinking, thinking tokens, and effort level didn't save in either editor
+  - Root Cause: Form fields had only id attributes, no name attributes for form submission
+  - Fix: Added name="metadata[toggle_thinking]", name="metadata[thinking_tokens]",
+    and name="metadata[effort_level]" to both embedded and main editor forms
+  - Modified: ui/core/llm_connectors.php (lines 357-366 embedded, lines 1373-1382 main)
+
+  Problem 2 - Metadata parsing variables not initialized for main editor:
+  - Impact: Even with name attributes, checkbox appeared unchecked after reload in main editor
+  - Root Cause: Variables ($toggleThinking, $thinkingTokens, $effortLevel) only initialized
+    for embedded editor (partial=editor), not for main editor form
   - Technical Detail: File has two separate forms - embedded editor (lines 134-962) shown when
-    ?partial=editor is in URL, and main editor (lines 1294-1602) shown otherwise. The metadata
-    parsing code at line 363-374 was inside the partial=editor conditional block, so it only
-    ran for embedded editor. Main editor form referenced undefined variables, causing checkbox
-    to never render as checked.
-  - Fix: Added duplicate metadata parsing code before main editor form (lines 1294-1304) to
-    initialize the same variables for both forms
-  - Modified: ui/core/llm_connectors.php (lines 1294-1304)
-  - Testing: Both embedded editor (used in profiles) and main editor now correctly save and
-    display toggle thinking checkbox state
+    ?partial=editor is in URL, and main editor (lines 1256-1602) shown otherwise. Metadata
+    parsing code was inside the partial=editor conditional block.
+  - Fix: Added duplicate metadata parsing code before main editor form (lines 1256-1264)
+  - Modified: ui/core/llm_connectors.php (lines 1256-1264)
+
+  Problem 3 - Inconsistent checkbox value comparison:
+  - Impact: Embedded editor used strict comparison that might not recognize checkbox value "1"
+  - Fix: Updated to use truthy check pattern: isset() && value (matches other checkboxes)
+  - Modified: ui/core/llm_connectors.php (line 351-352)
 
 Files Modified:
 ---------------
-• ui/core/llm_connectors.php - Added metadata parsing for main editor form
+• ui/core/llm_connectors.php - Added name attributes, metadata parsing, fixed comparison
 • connector/openrouterjsoncached.php - Updated version to v1.0.11
 • connector/openrouterjsoncached_verbose.php - Updated version to v1.0.11
+
+Technical Notes:
+----------------
+- JavaScript consolidation code (lines 1898-1959) remains for backwards compatibility
+  with metadata_json_editor.php in embedded editor
+- Dual approach: JavaScript for embedded editor, form POST for main editor
+- Both methods now work correctly and don't interfere with each other
 
 Version 1.0.10 (2025-11-07)
 ---------------------------

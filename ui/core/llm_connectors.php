@@ -348,22 +348,23 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                     $tmpMeta = json_decode($editItem["metadata"], true);
                     if (is_array($tmpMeta)) $metadataArr = $tmpMeta;
                 }
-                $toggleThinking = isset($metadataArr["toggle_thinking"]) && ($metadataArr["toggle_thinking"] === true || $metadataArr["toggle_thinking"] === 'true' || $metadataArr["toggle_thinking"] === 1);
+                // Use same pattern as other checkboxes for proper boolean/string/int handling
+                $toggleThinking = isset($metadataArr["toggle_thinking"]) && $metadataArr["toggle_thinking"];
                 $thinkingTokens = $metadataArr["thinking_tokens"] ?? '';
                 $effortLevel = $metadataArr["effort_level"] ?? '';
                 ?>
                 <div id="reasoning_details" style="margin-top:8px; margin-left:20px; padding:8px; border-left:2px solid #444;">
                     <label class="label-with-toggle"><span class='tip-label' data-tip='Enable thinking/reasoning for supported models (like o1, DeepSeek-R1). Shows model internal reasoning process.'>Toggle Thinking</span>
-                        <input type="hidden" id="toggle_thinking_hidden" value="false">
-                        <input type="checkbox" id="toggle_thinking" value="true" <?= $toggleThinking ? "checked" : "" ?>>
+                        <input type="hidden" name="metadata[toggle_thinking]" value="0">
+                        <input type="checkbox" id="toggle_thinking" name="metadata[toggle_thinking]" value="1" <?= $toggleThinking ? "checked" : "" ?>>
                         <span class="toggle-text">On</span>
                     </label>
                     <div style="height:6px;"></div>
                     <label for='thinking_tokens'><span class='tip-label' data-tip='Maximum tokens for thinking/reasoning output (Anthropic/Gemini only). OpenAI uses effort_level instead. Leave empty to use default.'>Thinking Tokens</span></label>
-                    <input type="number" id="thinking_tokens" value="<?= htmlspecialchars($thinkingTokens) ?>" min="0" step="1" placeholder="Optional">
+                    <input type="number" id="thinking_tokens" name="metadata[thinking_tokens]" value="<?= htmlspecialchars($thinkingTokens) ?>" min="0" step="1" placeholder="Optional">
                     <div style="height:6px;"></div>
                     <label for='effort_level'><span class='tip-label' data-tip='Reasoning effort level for OpenAI reasoning models (o1, o3, o4, gpt-5). minimal=Quick (gpt-5+), low=Basic, medium=Balanced, high=Thorough. Leave empty for default.'>Effort Level</span></label>
-                    <select id="effort_level">
+                    <select id="effort_level" name="metadata[effort_level]">
                         <option value="">-- select --</option>
                         <option value="minimal" <?= $effortLevel === 'minimal' ? 'selected' : '' ?>>Minimal</option>
                         <option value="low" <?= $effortLevel === 'low' ? 'selected' : '' ?>>Low</option>
@@ -1369,16 +1370,16 @@ $effortLevel = $metadataArr["effort_level"] ?? '';
             </div>
             <div id="reasoning_details_modal" style="margin-top:8px; padding:8px; border-left:2px solid #444;">
                 <label class="label-with-toggle"><span class='tip-label' data-tip='Enable thinking/reasoning for supported models (like o1, DeepSeek-R1). Shows model internal reasoning process.'>Toggle Thinking</span>
-                    <input type="hidden" id="toggle_thinking_hidden_modal" value="false">
-                    <input type="checkbox" id="toggle_thinking_modal" value="true" <?= $toggleThinking ? "checked" : "" ?>>
+                    <input type="hidden" name="metadata[toggle_thinking]" value="0">
+                    <input type="checkbox" id="toggle_thinking_modal" name="metadata[toggle_thinking]" value="1" <?= $toggleThinking ? "checked" : "" ?>>
                     <span class="toggle-text">On</span>
                 </label>
                 <div style="height:6px;"></div>
                 <label for='thinking_tokens_modal'><span class='tip-label' data-tip='Maximum tokens for thinking/reasoning output (Anthropic/Gemini only). OpenAI uses effort_level instead. Leave empty to use default.'>Thinking Tokens</span></label>
-                <input type="number" id="thinking_tokens_modal" value="<?= htmlspecialchars($thinkingTokens) ?>" min="0" step="1" placeholder="Optional">
+                <input type="number" id="thinking_tokens_modal" name="metadata[thinking_tokens]" value="<?= htmlspecialchars($thinkingTokens) ?>" min="0" step="1" placeholder="Optional">
                 <div style="height:6px;"></div>
                 <label for='effort_level_modal'><span class='tip-label' data-tip='Reasoning effort level for OpenAI reasoning models (o1, o3, o4, gpt-5). minimal=Quick (gpt-5+), low=Basic, medium=Balanced, high=Thorough. Leave empty for default.'>Effort Level</span></label>
-                <select id="effort_level_modal">
+                <select id="effort_level_modal" name="metadata[effort_level]">
                     <option value="">-- select --</option>
                     <option value="minimal" <?= $effortLevel === 'minimal' ? 'selected' : '' ?>>Minimal</option>
                     <option value="low" <?= $effortLevel === 'low' ? 'selected' : '' ?>>Low</option>
