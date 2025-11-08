@@ -31,11 +31,18 @@ Critical Bug Fixes:
   - Fix: Updated to use truthy check pattern: isset() && value (matches other checkboxes)
   - Modified: ui/core/llm_connectors.php (line 351-352)
 
+  Problem 4 - Custom instruction not prepended in simple format (Bug #1 from v1.0.9):
+  - Impact: Custom instructions ignored when using simple format with any format fields enabled
+  - Root Cause: buildSimpleFormatInstruction() never prepended custom instruction to output
+  - Fix: Added check to prepend custom instruction before returning instruction string
+  - Modified: connector/openrouterjsoncached_helpers.php (lines 512-516)
+
 Files Modified:
 ---------------
 • ui/core/llm_connectors.php - Added name attributes, metadata parsing, fixed comparison
 • connector/openrouterjsoncached.php - Updated version to v1.0.11
 • connector/openrouterjsoncached_verbose.php - Updated version to v1.0.11
+• connector/openrouterjsoncached_helpers.php - Fixed custom instruction prepending (Bug #1)
 
 Technical Notes:
 ----------------
