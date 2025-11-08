@@ -311,9 +311,10 @@ class openrouterjsoncached
             ? $GLOBALS["CONNECTOR"][$this->name]["response_format"]
             : 'json';
 
-        $this->_includeActions = isset($GLOBALS["CONNECTOR"][$this->name]["include_actions_list"])
-            ? (bool)$GLOBALS["CONNECTOR"][$this->name]["include_actions_list"]
-            : true;
+        $this->_includeActions = (isset($GLOBALS["FUNCTIONS_ARE_ENABLED"]) && $GLOBALS["FUNCTIONS_ARE_ENABLED"])
+            && (isset($GLOBALS["CONNECTOR"][$this->name]["include_actions_list"])
+                ? (bool)$GLOBALS["CONNECTOR"][$this->name]["include_actions_list"]
+                : true);
 
         $this->_includeMood = isset($GLOBALS["CONNECTOR"][$this->name]["include_mood_requirement"])
             ? (bool)$GLOBALS["CONNECTOR"][$this->name]["include_mood_requirement"]
