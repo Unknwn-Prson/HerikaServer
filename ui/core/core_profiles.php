@@ -1501,15 +1501,15 @@ $ittById = $byId($ittRows);
                 <div>Provider</div><input name="provider" value="${escapeHtml(val('provider'))}">
                 <div>Model</div><input name="model" value="${escapeHtml(val('model'))}">
                 <div>Driver</div><input name="driver" value="${escapeHtml(val('driver'))}">
-                <div>Temperature</div><input name="temperature" type="number" step="0.01" value="${escapeHtml(val('temperature'))}">
+                <div>Temperature</div><input name="temperature" type="number" step="0.0001" value="${escapeHtml(val('temperature'))}">
                 <div>Max Tokens</div><input name="max_tokens" type="number" step="1" value="${escapeHtml(val('max_tokens'))}">
-                <div>Presence Penalty</div><input name="presence_penalty" type="number" step="0.01" value="${escapeHtml(val('presence_penalty'))}">
-                <div>Frequency Penalty</div><input name="frequency_penalty" type="number" step="0.01" value="${escapeHtml(val('frequency_penalty'))}">
-                <div>Repetition Penalty</div><input name="repetition_penalty" type="number" step="0.01" value="${escapeHtml(val('repetition_penalty'))}">
-                <div>top_p</div><input name="top_p" type="number" step="0.01" value="${escapeHtml(val('top_p'))}">
+                <div>Presence Penalty</div><input name="presence_penalty" type="number" step="0.0001" value="${escapeHtml(val('presence_penalty'))}">
+                <div>Frequency Penalty</div><input name="frequency_penalty" type="number" step="0.0001" value="${escapeHtml(val('frequency_penalty'))}">
+                <div>Repetition Penalty</div><input name="repetition_penalty" type="number" step="0.0001" value="${escapeHtml(val('repetition_penalty'))}">
+                <div>top_p</div><input name="top_p" type="number" step="0.0001" value="${escapeHtml(val('top_p'))}">
                 <div>top_k</div><input name="top_k" type="number" step="1" value="${escapeHtml(val('top_k'))}">
-                <div>min_p</div><input name="min_p" type="number" step="0.01" value="${escapeHtml(val('min_p'))}">
-                <div>top_a</div><input name="top_a" type="number" step="0.01" value="${escapeHtml(val('top_a'))}">
+                <div>min_p</div><input name="min_p" type="number" step="0.0001" value="${escapeHtml(val('min_p'))}">
+                <div>top_a</div><input name="top_a" type="number" step="0.0001" value="${escapeHtml(val('top_a'))}">
                 <div>Enforce JSON</div><input name="enforce_json" type="checkbox" value="1" ${bool(conn.enforce_json)}>
                 <div>Prefill JSON</div><input name="prefill_json" type="checkbox" value="1" ${bool(conn.prefill_json)}>
                 <div>Reasoning Model</div><input name="reasoning_model" type="checkbox" value="1" ${bool(conn.reasoning_model)}>

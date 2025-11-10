@@ -7,17 +7,21 @@ Version 1.0.16 (2025-11-10)
 
 UI Improvements:
 ----------------
-✓ **Increased LLM parameter decimal precision**
+✓ **Increased LLM parameter decimal precision (CRITICAL FIX)**
   - Changed step value from 0.01 (2 decimals) to 0.0001 (4 decimals)
   - Allows more precise control over LLM parameters
   - Affects: temperature, presence_penalty, frequency_penalty, repetition_penalty,
     top_p, min_p, top_a
   - Users can now enter values like 0.1234 instead of being limited to 0.12
-  - Applied to both embedded editor and main modal editor in llm_connectors.php
+  - Applied to THREE locations:
+    * LLM Connectors embedded editor (llm_connectors.php line ~496-503)
+    * LLM Connectors modal editor (llm_connectors.php line ~1562-1569)
+    * Profile Editor (core_profiles.php line ~1504-1512)
 
 Files Modified:
 ---------------
-• ui/core/llm_connectors.php - Parameter precision increased to 4 decimals
+• ui/core/llm_connectors.php - Parameter precision increased to 4 decimals (both editors)
+• ui/core/core_profiles.php - Parameter precision increased to 4 decimals (profile editor)
 • connector/openrouterjsoncached.php - Version updated to 1.0.16
 • connector/openrouterjsoncached_verbose.php - Version updated to 1.0.16
 
@@ -27,15 +31,18 @@ The v1.0.16 zip now includes ALL necessary files:
 • connector/openrouterjsoncached.php (v1.0.16)
 • connector/openrouterjsoncached_verbose.php (v1.0.16)
 • connector/openrouterjsoncached_helpers.php
-• ui/core/llm_connectors.php (with 4-decimal precision)
+• ui/core/llm_connectors.php (with 4-decimal precision - connector editor)
+• ui/core/core_profiles.php (with 4-decimal precision - profile editor)
 • ui/core/_par_precision_llm_connectors.php (backup reference file)
 • CHANGELOG.txt
+• INSTALLATION_INSTRUCTIONS.txt
 
 Technical Notes:
 ----------------
 - Parameter precision change resolves "please enter a valid value" errors
+- Fixed in BOTH connector settings AND profile settings
 - Backup file (_par_precision_llm_connectors.php) preserved for reference
-- Total package size: ~112KB (6 files)
+- Total package size: ~150KB (8 files)
 
 ===============================================================================
 

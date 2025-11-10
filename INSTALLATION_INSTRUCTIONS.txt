@@ -16,6 +16,7 @@ INSTALLATION STEPS
    - HerikaServer/connector/openrouterjsoncached_verbose.php
    - HerikaServer/connector/openrouterjsoncached_helpers.php
    - HerikaServer/ui/core/llm_connectors.php
+   - HerikaServer/ui/core/core_profiles.php
 
 2. EXTRACT AND COPY FILES
    Copy the files from this zip to your HerikaServer directory, maintaining
@@ -25,6 +26,7 @@ INSTALLATION STEPS
    connector/openrouterjsoncached_verbose.php        → HerikaServer/connector/
    connector/openrouterjsoncached_helpers.php        → HerikaServer/connector/
    ui/core/llm_connectors.php                        → HerikaServer/ui/core/
+   ui/core/core_profiles.php                         → HerikaServer/ui/core/
    ui/core/_par_precision_llm_connectors.php         → HerikaServer/ui/core/
 
 3. DELETE THE BACKUP FILE (BEFORE PRODUCTION)
@@ -41,10 +43,11 @@ INSTALLATION STEPS
 
 5. VERIFY INSTALLATION
    - Open HerikaServer web interface
-   - Go to LLM Connectors configuration page
+   - Go to LLM Connectors configuration page OR Profiles page
    - Try entering a value like 0.1234 in temperature field
    - Should now accept up to 4 decimal places without "please enter a valid
      value" error
+   - NOTE: Precision is fixed in BOTH Connector settings AND Profile settings
 
 ===============================================================================
 FILE DESCRIPTIONS
@@ -68,6 +71,11 @@ ui/core/llm_connectors.php
   LLM connector configuration UI
   NOW SUPPORTS 4 DECIMAL PLACES (was 2 decimals in older versions)
   Includes collapsible sections for better organization
+
+ui/core/core_profiles.php
+  Profile editor UI (CRITICAL FIX)
+  NOW SUPPORTS 4 DECIMAL PLACES (was 2 decimals in older versions)
+  Fixes "please enter a valid value" error in profile LLM parameter settings
 
 ui/core/_par_precision_llm_connectors.php
   Backup reference file (DELETE BEFORE PRODUCTION)
@@ -99,11 +107,14 @@ TROUBLESHOOTING
 
 Issue: Still getting "please enter a valid value" error
 Solution:
-  1. Verify you copied ui/core/llm_connectors.php to the correct location
+  1. Verify you copied BOTH ui/core/llm_connectors.php AND ui/core/core_profiles.php
   2. Clear browser cache completely (Ctrl + Shift + Delete)
   3. Do a hard refresh (Ctrl + F5)
   4. Check file permissions (should be readable by web server)
-  5. Verify you're editing the LLM Connector (not Profile settings)
+  5. Check which page you're editing:
+     - Connector settings: needs ui/core/llm_connectors.php
+     - Profile settings: needs ui/core/core_profiles.php
+     - BOTH files are included in this package and BOTH need to be copied
 
 Issue: Changes don't appear in UI
 Solution:
