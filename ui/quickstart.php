@@ -318,11 +318,13 @@ foreach ($quickstartConf as $pname => $parms) {
         $parms["description"] .= " <a target='_blank' href='" . htmlspecialchars($parms["helpurl"]) . "'>[help/doc]</a>";
     }
 
-    if (isset($parms["userlvl"]) && !($access[$parms["userlvl"]] <= $access[$_SESSION["OPTION_TO_SHOW"]])) {
-        $MAKE_NO_VISIBLE_MARK = " style='display:none' ";
-    } else {
-        $MAKE_NO_VISIBLE_MARK = "";
-    }
+    // Configuration depth restrictions removed - all settings now accessible at all times
+    // if (isset($parms["userlvl"]) && !($access[$parms["userlvl"]] <= $access[$_SESSION["OPTION_TO_SHOW"]])) {
+    //     $MAKE_NO_VISIBLE_MARK = " style='display:none' ";
+    // } else {
+    //     $MAKE_NO_VISIBLE_MARK = "";
+    // }
+    $MAKE_NO_VISIBLE_MARK = "";
 
     $fieldName = strtr($pname, array(" " => "@"));
 

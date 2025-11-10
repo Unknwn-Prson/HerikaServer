@@ -527,6 +527,8 @@ function extractSimpleFormatFromBuffer($buffer, $includeMood, $includeListener, 
     if ($includeTarget) $groupCount++;
 
     if ($groupCount === 0) {
+        // All format flags disabled - no format markers expected, return entire buffer as message
+        logMessage("[SimpleFormat] All format flags disabled (no mood, listener, actions, or target required), returning entire buffer as message");
         return [
             'mood' => '',
             'listener' => '',

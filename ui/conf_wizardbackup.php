@@ -193,12 +193,14 @@ foreach ($currentConf as $pname=>$parms) {
         $parms["description"].=" <a target='_blank' href='{$parms["helpurl"]}'>[help/doc]</a>";
     }
     
-    $access=["basic"=>0,"pro"=>1,"wip"=>2];
-    if ( isset($parms["userlvl"]) && !($access[$parms["userlvl"]]<=$access[$_SESSION["OPTION_TO_SHOW"]]))  {
-        $MAKE_NO_VISIBLE_MARK=" style='display:none' ";
-    } else {
-        $MAKE_NO_VISIBLE_MARK="";
-    }
+    // Configuration depth restrictions removed - all settings now accessible at all times
+    // $access=["basic"=>0,"pro"=>1,"wip"=>2];
+    // if ( isset($parms["userlvl"]) && !($access[$parms["userlvl"]]<=$access[$_SESSION["OPTION_TO_SHOW"]]))  {
+    //     $MAKE_NO_VISIBLE_MARK=" style='display:none' ";
+    // } else {
+    //     $MAKE_NO_VISIBLE_MARK="";
+    // }
+    $MAKE_NO_VISIBLE_MARK="";
     
     if (!isset($pSeparator["{$pnameA[0]}"])) {
         echo str_repeat("</fieldset>", $lvl1);

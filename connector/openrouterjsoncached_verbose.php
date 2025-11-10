@@ -107,7 +107,7 @@ class openrouterjsoncached_verbose
         $this->_simpleFormatParsed = false;
         $this->_usedPrefill = false;
         $this->_prefillContent = '';
-        $this->_simpleFormatMessageStart = 0;
+        $this->_simpleFormatMessageStart = -1;
         $this->_lastReturnedLength = 0;
         $this->_verboseLogging = true; // Default enabled for testing phase
         $this->_jsonResponsesEncoded = array();
@@ -451,7 +451,8 @@ class openrouterjsoncached_verbose
                 unset($template['listener']);
             }
 
-            $formatInstruction = "{$prefix} $speechReinforcement $customInstruction Use ONLY this JSON object to give your answer. Do not send any other characters outside of this JSON structure$zonosTones: " . json_encode($template);
+            $prefixPart = trim(implode(' ', array_filter([$prefix, $speechReinforcement, $customInstruction], 'strlen')));
+            $formatInstruction = "{$prefixPart} Use ONLY this JSON object to give your answer. Do not send any other characters outside of this JSON structure$zonosTones: " . json_encode($template);
 
             // VERBOSE_LOGGING_START - JSON format
             if ($this->_verboseLogging) {
@@ -461,12 +462,13 @@ class openrouterjsoncached_verbose
             }
             // VERBOSE_LOGGING_END
         } else {
+            $prefixPart = trim(implode(' ', array_filter([$prefix, $speechReinforcement, $customInstruction], 'strlen')));
             $formatInstruction = buildSimpleFormatInstruction(
                 $this->_includeMood,
                 $this->_includeListener,
                 $this->_includeActions,
                 $this->_includeTarget,
-                "{$prefix} $speechReinforcement $customInstruction"
+                $prefixPart
             );
 
             // VERBOSE_LOGGING_START - Simple format
@@ -1628,6 +1630,26 @@ class openrouterjsoncached_verbose
                 if ($parsed['found']) {
                     $this->_simpleFormatParsed = true;
 
+                    // Calculate where the message starts in the buffer (after format markers)
+                    // Search in the same buffer used for parsing (with prefill if applicable)
+                    $messagePos = strpos($bufferToParse, $parsed['message']);
+                    if ($messagePos !== false) {
+                        // If prefill was used, adjust position to account for prefill length
+                        if ($this->_usedPrefill) {
+                            $messagePos = $messagePos - strlen($this->_prefillContent);
+                            if ($messagePos < 0) {
+                                $messagePos = 0;
+                            }
+                        }
+                        $this->_simpleFormatMessageStart = $messagePos;
+                        $this->_lastReturnedLength = strlen($parsed['message']);
+                    } else {
+                        // Fallback: assume message starts at beginning
+                        logMessage("[{$this->name}] Warning: Could not find message position in buffer, using fallback (position 0)");
+                        $this->_simpleFormatMessageStart = 0;
+                        $this->_lastReturnedLength = strlen($parsed['message']);
+                    }
+
                     if ($this->_includeMood && !empty($parsed['mood'])) {
                         $GLOBALS["SCRIPTLINE_ANIMATION"] = function_exists('GetAnimationHex') ? GetAnimationHex($parsed["mood"]) : '';
                         $GLOBALS["SCRIPTLINE_EXPRESSION"] = function_exists('GetExpression') ? GetExpression($parsed["mood"]) : '';
@@ -1660,16 +1682,22 @@ class openrouterjsoncached_verbose
                     return stripReasoningTokens($parsed['message']);
                 }
             } else {
-                // Simple format already parsed, just return accumulated message
-                // VERBOSE_LOGGING_START - _parseAndReturnContent: Accumulating
-                if ($this->_verboseLogging && strlen($this->_buffer) > ($this->_lastReturnedLength ?? 0)) {
-                    logMessage("[CACHE-VERBOSE] Accumulating more content, buffer now: " . strlen($this->_buffer) . " chars");
-                    $this->_lastReturnedLength = strlen($this->_buffer);
-                }
-                // VERBOSE_LOGGING_END
+                // Simple format already parsed, return only new content since last call
+                if ($this->_simpleFormatMessageStart >= 0) {
+                    $currentMessage = substr($this->_buffer, $this->_simpleFormatMessageStart);
+                    $newContent = substr($currentMessage, $this->_lastReturnedLength);
 
-                // Strip any reasoning tokens from accumulated content before returning
-                return stripReasoningTokens($this->_buffer);
+                    // VERBOSE_LOGGING_START - _parseAndReturnContent: Incremental content
+                    if ($this->_verboseLogging && strlen($newContent) > 0) {
+                        logMessage("[CACHE-VERBOSE] Returning incremental content (length: " . strlen($newContent) . " chars, total message now: " . strlen($currentMessage) . " chars)");
+                    }
+                    // VERBOSE_LOGGING_END
+
+                    $this->_lastReturnedLength = strlen($currentMessage);
+                    // Strip any reasoning tokens from incremental content before returning
+                    return stripReasoningTokens($newContent);
+                }
+                return "";
             }
         }
 
