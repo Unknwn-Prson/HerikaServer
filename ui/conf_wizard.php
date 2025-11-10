@@ -502,17 +502,18 @@ foreach ($currentConf as $pname=>$parms) {
         if (!isset($parms["currentValue"])) {
             $parms["currentValue"] = [];
         }
-    
+
         foreach ($parms["values"] as $item) {
             $addnote="";
-            if ($fieldName=="CONNECTORS") 
-                if (in_array($item,["openrouter","openai","koboldcpp"])) {
-                    if ($access[$_SESSION["OPTION_TO_SHOW"]]<2)
-                        continue;
-                    else
-                        $addnote="*";
-                }
-            
+            // Configuration depth restrictions removed - all connector options now accessible
+            // if ($fieldName=="CONNECTORS")
+            //     if (in_array($item,["openrouter","openai","koboldcpp"])) {
+            //         if ($access[$_SESSION["OPTION_TO_SHOW"]]<2)
+            //             continue;
+            //         else
+            //             $addnote="*";
+            //     }
+
             $checked = in_array($item, $parms["currentValue"]) ? "checked" : "";
             $buffer .= "<input type='checkbox' name='{$fieldName}[]' value='$item' $checked> " .
             "<span style='"
