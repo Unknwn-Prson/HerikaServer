@@ -19,29 +19,40 @@ INSTALLATION STEPS
    - HerikaServer/ui/core/core_profiles.php
 
 2. EXTRACT AND COPY FILES
-   Copy the files from this zip to your HerikaServer directory, maintaining
-   the directory structure:
+   Extract the zip file and copy all files to your HerikaServer directory,
+   maintaining the directory structure. The package includes:
 
-   connector/openrouterjsoncached.php                → HerikaServer/connector/
-   connector/openrouterjsoncached_verbose.php        → HerikaServer/connector/
-   connector/openrouterjsoncached_helpers.php        → HerikaServer/connector/
-   ui/core/llm_connectors.php                        → HerikaServer/ui/core/
-   ui/core/core_profiles.php                         → HerikaServer/ui/core/
-   ui/core/_par_precision_llm_connectors.php         → HerikaServer/ui/core/
+   Connector Files:
+   - connector/openrouterjsoncached.php
+   - connector/openrouterjsoncached_verbose.php
+   - connector/openrouterjsoncached_helpers.php
+   - connector/OPENROUTERJSONCACHED_README.md
 
-3. DELETE THE BACKUP FILE (BEFORE PRODUCTION)
-   The file _par_precision_llm_connectors.php is a backup for reference only.
-   - Keep it during development/testing
-   - DELETE it before deploying to production
-   - Do NOT let Claude (AI) delete it - only humans should
+   Core Library Files:
+   - lib/core/llm_connector.class.php
+   - lib/chat_helper_functions.php
+   - lib/data_functions.php
 
-4. CLEAR BROWSER CACHE
+   UI Files:
+   - ui/core/llm_connectors.php (UPDATED - 4 decimal precision)
+   - ui/core/core_profiles.php (UPDATED - 4 decimal precision)
+   - ui/events-memories.php
+   - ui/conf_wizard.php
+   - ui/conf_wizardbackup.php
+   - ui/quickstart.php
+
+   Other Files:
+   - conf/conf_schema.json
+   - prompts/dialogue_prompt.php
+   - Documentation files (CHANGELOG.txt, etc.)
+
+3. CLEAR BROWSER CACHE
    After copying files, you MUST clear your browser cache:
    - Chrome/Edge: Ctrl + Shift + Delete → Clear cached images and files
    - Firefox: Ctrl + Shift + Delete → Cache
    - Or do a hard refresh: Ctrl + F5 (Windows) or Cmd + Shift + R (Mac)
 
-5. VERIFY INSTALLATION
+4. VERIFY INSTALLATION
    - Open HerikaServer web interface
    - Go to LLM Connectors configuration page OR Profiles page
    - Try entering a value like 0.1234 in temperature field
