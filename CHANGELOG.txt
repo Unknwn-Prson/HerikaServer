@@ -2,6 +2,87 @@
 CHIM CACHED CONNECTOR - VERSION HISTORY
 ===============================================================================
 
+Version 1.0.13 (2025-11-10)
+---------------------------
+
+Critical Bug Fixes - Simple Format Streaming:
+----------------------------------------------
+✓ **Fixed message position initialization bug (Issue #1)**
+  - Problem: Messages starting at position 0 failed to stream incrementally
+  - Root Cause: _simpleFormatMessageStart initialized to 0, checked with > 0 instead of >= 0
+  - Impact: First message returned correctly, but subsequent streaming calls returned empty strings
+  - Fix: Changed initialization from 0 to -1, changed condition from > 0 to >= 0
+  - Modified: connector/openrouterjsoncached.php (line 108, 1008)
+  - Modified: connector/openrouterjsoncached_verbose.php (line 110, 1684)
+
+✓ **Fixed prefill position lookup mismatch (Issue #2)**
+  - Problem: Position calculated in wrong buffer when using prefill
+  - Root Cause: Parsed from bufferToParse (includes prefill) but searched position in _buffer (without prefill)
+  - Impact: Content corruption or loss during streaming when prefill was used
+  - Fix: Search in same buffer used for parsing, adjust position to account for prefill length
+  - Modified: connector/openrouterjsoncached.php (lines 989-1005)
+  - Modified: connector/openrouterjsoncached_verbose.php (lines 1633-1649)
+
+✓ **Fixed inconsistent behavior between connectors (Issue #3)**
+  - Problem: Main connector returned incremental content, verbose connector returned entire buffer
+  - Impact: Different streaming behavior caused content duplication in verbose connector
+  - Fix: Aligned verbose connector to use same incremental logic as main connector
+  - Modified: connector/openrouterjsoncached_verbose.php (lines 1683-1699)
+  - Result: Both connectors now stream consistently (only new content)
+
+✓ **Fixed multiple spaces in custom instruction (Issue #4)**
+  - Problem: String concatenation created multiple consecutive spaces when variables were empty
+  - Impact: Unnecessary whitespace in format instructions
+  - Fix: Replaced with trim(implode(' ', array_filter(...))) for clean spacing
+  - Modified: connector/openrouterjsoncached.php (lines 393-394, 396-402)
+  - Modified: connector/openrouterjsoncached_verbose.php (lines 454-455, 465-472)
+
+✓ **Added position lookup failure handling (Issue #5)**
+  - Problem: When strpos() failed to find message position, streaming would fail permanently
+  - Impact: Empty strings returned for all subsequent calls
+  - Fix: Added fallback logic with warning logging when position lookup fails
+  - Modified: connector/openrouterjsoncached.php (lines 1000-1005)
+  - Modified: connector/openrouterjsoncached_verbose.php (lines 1644-1649)
+
+Enhancement - Simple Format Logging:
+-------------------------------------
+✓ **Added logging for all-flags-disabled edge case (Issue #6)**
+  - When all format flags are disabled (no mood, listener, actions, or target)
+  - Logs that entire buffer is returned as message (expected behavior)
+  - Modified: connector/openrouterjsoncached_helpers.php (lines 530-531)
+
+Configuration Changes:
+----------------------
+✓ **Removed all configuration depth restrictions**
+  - All settings now accessible at all times regardless of user level
+  - Removed "basic", "pro", "wip" (experimental) visibility restrictions
+  - Users can now access all configuration options without changing depth setting
+  - Modified: ui/conf_wizard.php (lines 336-343)
+  - Modified: ui/conf_wizardbackup.php (lines 196-203)
+  - Modified: ui/quickstart.php (lines 321-327)
+
+Files Modified:
+---------------
+• connector/openrouterjsoncached.php - Version updated, Issues #1-5 fixed
+• connector/openrouterjsoncached_verbose.php - Version updated, Issues #1-5 fixed
+• connector/openrouterjsoncached_helpers.php - Issue #6 logging added
+• ui/conf_wizard.php - Configuration depth restrictions removed
+• ui/conf_wizardbackup.php - Configuration depth restrictions removed
+• ui/quickstart.php - Configuration depth restrictions removed
+
+Technical Notes:
+----------------
+- All v1.0.11 and v1.0.12 features verified and intact:
+  ✓ FUNCTIONS_ARE_ENABLED check in simple format (v1.0.12)
+  ✓ Custom instruction prepending (v1.0.11)
+  ✓ Thinking/reasoning settings saving (v1.0.11)
+  ✓ Cache filename format inclusion (v1.0.9)
+- These fixes address critical streaming issues that could cause:
+  * Silent failures (position 0 bug)
+  * Content corruption (prefill mismatch)
+  * Content duplication (verbose connector inconsistency)
+  * Permanent streaming failures (position lookup failures)
+
 Version 1.0.12 (2025-11-08)
 ---------------------------
 
