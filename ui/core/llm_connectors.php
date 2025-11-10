@@ -415,34 +415,8 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                         <option value="Gemini" <?= ($metadata['provider_caching'] ?? '') === 'Gemini' ? 'selected' : '' ?>>Gemini</option>
                     </select><br>
 
-                    <label for='response_format'>Response Format</label><br>
-                    <select name="metadata[response_format]" id="response_format">
-                        <option value="json" <?= ($metadata['response_format'] ?? 'json') === 'json' ? 'selected' : '' ?>>JSON (structured)</option>
-                        <option value="simple" <?= ($metadata['response_format'] ?? '') === 'simple' ? 'selected' : '' ?>>Simple (natural language)</option>
-                    </select><br>
-
                     <label for='dialogue_cache_uncached_count'><span class='tip-label' data-tip='Number of most recent dialogue entries to keep uncached (0-10)'>Uncached Dialogue Count</span></label><br>
                     <input type='number' name='metadata[dialogue_cache_uncached_count]' id='dialogue_cache_uncached_count' value='<?= htmlspecialchars($metadata['dialogue_cache_uncached_count'] ?? '4') ?>' min='0' max='10' step='1'><br>
-
-                    <div id="simple_format_options" style="display:none; margin-top:12px; padding:8px; border-left:3px solid #176529;">
-                        <div style="font-size:13px; font-weight:600; margin-bottom:8px;">Simple Format Content Options:</div>
-                        <label class="label-with-toggle"><span>Include Mood</span>
-                            <input type="hidden" name="metadata[include_mood_requirement]" value="0">
-                            <input type="checkbox" name="metadata[include_mood_requirement]" value="1" <?= (!isset($metadata['include_mood_requirement']) || $metadata['include_mood_requirement']) ? 'checked' : '' ?>>
-                        </label><br>
-                        <label class="label-with-toggle"><span>Include Listener</span>
-                            <input type="hidden" name="metadata[include_listener_requirement]" value="0">
-                            <input type="checkbox" name="metadata[include_listener_requirement]" value="1" <?= (!isset($metadata['include_listener_requirement']) || $metadata['include_listener_requirement']) ? 'checked' : '' ?>>
-                        </label><br>
-                        <label class="label-with-toggle"><span>Include Actions</span>
-                            <input type="hidden" name="metadata[include_actions_list]" value="0">
-                            <input type="checkbox" name="metadata[include_actions_list]" value="1" <?= (!isset($metadata['include_actions_list']) || $metadata['include_actions_list']) ? 'checked' : '' ?>>
-                        </label><br>
-                        <label class="label-with-toggle"><span>Include Target</span>
-                            <input type="hidden" name="metadata[include_target_requirement]" value="0">
-                            <input type="checkbox" name="metadata[include_target_requirement]" value="1" <?= (!isset($metadata['include_target_requirement']) || $metadata['include_target_requirement']) ? 'checked' : '' ?>>
-                        </label>
-                    </div>
 
                     <div id="verbose_logging_option" style="display:none; margin-top:12px;">
                         <label class="label-with-toggle"><span class='tip-label' data-tip='Enable detailed logging for testing (verbose connector only)'>Verbose Logging</span>
@@ -458,6 +432,58 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                             <input type="checkbox" name="metadata[minimize_quality_prompt]" value="1" <?= (!isset($metadata['minimize_quality_prompt']) || $metadata['minimize_quality_prompt']) ? 'checked' : '' ?>>
                             <span class="toggle-text">On</span>
                         </label>
+                    </div>
+
+                    <!-- Response Format Section (Collapsible) -->
+                    <div style="margin-top:16px; border:1px solid #4a4a4a; border-radius:8px; background:#252525;">
+                        <div class="collapsible-header" data-target="response_format_section" style="padding:10px; cursor:pointer; user-select:none; font-weight:600; color:#e9efff; display:flex; justify-content:space-between; align-items:center;">
+                            <span>📝 Response Format</span>
+                            <span class="collapse-arrow">▼</span>
+                        </div>
+                        <div id="response_format_section" class="collapsible-content" style="padding:10px; display:none;">
+                            <label for='response_format'>Response Format</label><br>
+                            <select name="metadata[response_format]" id="response_format">
+                                <option value="json" <?= ($metadata['response_format'] ?? 'json') === 'json' ? 'selected' : '' ?>>JSON (structured)</option>
+                                <option value="simple" <?= ($metadata['response_format'] ?? '') === 'simple' ? 'selected' : '' ?>>Simple (natural language)</option>
+                            </select><br>
+
+                            <div style="margin-top:12px;">
+                                <label class="label-with-toggle"><span class='tip-label' data-tip='Include action selection in response format. Required for NPCs to perform actions.'>Include Actions</span>
+                                    <input type="hidden" name="metadata[include_actions_list]" value="0">
+                                    <input type="checkbox" name="metadata[include_actions_list]" value="1" <?= (!isset($metadata['include_actions_list']) || $metadata['include_actions_list']) ? 'checked' : '' ?>>
+                                </label><br>
+                                <label class="label-with-toggle"><span class='tip-label' data-tip='Include mood/emotion in response. Used for NPC animations and expressions.'>Include Mood</span>
+                                    <input type="hidden" name="metadata[include_mood_requirement]" value="0">
+                                    <input type="checkbox" name="metadata[include_mood_requirement]" value="1" <?= (!isset($metadata['include_mood_requirement']) || $metadata['include_mood_requirement']) ? 'checked' : '' ?>>
+                                </label><br>
+                                <label class="label-with-toggle"><span class='tip-label' data-tip='Include action target (who/what the action is directed at).'>Include Target</span>
+                                    <input type="hidden" name="metadata[include_target_requirement]" value="0">
+                                    <input type="checkbox" name="metadata[include_target_requirement]" value="1" <?= (!isset($metadata['include_target_requirement']) || $metadata['include_target_requirement']) ? 'checked' : '' ?>>
+                                </label><br>
+                                <label class="label-with-toggle"><span class='tip-label' data-tip='Include listener field (who the NPC is talking to). Useful for multi-NPC conversations.'>Include Listener</span>
+                                    <input type="hidden" name="metadata[include_listener_requirement]" value="0">
+                                    <input type="checkbox" name="metadata[include_listener_requirement]" value="1" <?= (!isset($metadata['include_listener_requirement']) || $metadata['include_listener_requirement']) ? 'checked' : '' ?>>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings Section (Collapsible) -->
+                    <div style="margin-top:16px; border:1px solid #4a4a4a; border-radius:8px; background:#252525;">
+                        <div class="collapsible-header" data-target="advanced_settings_section" style="padding:10px; cursor:pointer; user-select:none; font-weight:600; color:#e9efff; display:flex; justify-content:space-between; align-items:center;">
+                            <span>⚙️ Advanced Settings</span>
+                            <span class="collapse-arrow">▼</span>
+                        </div>
+                        <div id="advanced_settings_section" class="collapsible-content" style="padding:10px; display:none;">
+                            <label for='max_dialogue_cache_context_size'><span class='tip-label' data-tip='Maximum number of dialogue entries to cache in temp files. Higher = more context but larger cache files. Recommended: 93'>Max Dialogue Cache Context Size</span></label><br>
+                            <input type='number' name='metadata[max_dialogue_cache_context_size]' id='max_dialogue_cache_context_size' value='<?= htmlspecialchars($metadata['max_dialogue_cache_context_size'] ?? '93') ?>' min='0' step='1'><br>
+
+                            <label for='custom_system_instruction'><span class='tip-label' data-tip='Additional instruction added to the system prompt (after character bio, before dialogue history). Does NOT replace other instructions.'>Custom System Instruction</span></label><br>
+                            <textarea name='metadata[custom_system_instruction]' id='custom_system_instruction' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata['custom_system_instruction'] ?? '') ?></textarea><br>
+
+                            <label for='custom_last_instruction'><span class='tip-label' data-tip='Custom text inserted as second-to-last element in dialogue history (current user message is always last). Appears right before user current request.'>Custom Last Instruction</span></label><br>
+                            <textarea name='metadata[custom_last_instruction]' id='custom_last_instruction' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata['custom_last_instruction'] ?? '') ?></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -658,9 +684,7 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
         function updateCachingSettings(){
             const driver = driverInput ? driverInput.value : (driverSelect ? driverSelect.value : '');
             const cachingSettings = document.getElementById('caching_settings');
-            const simpleFormatOptions = document.getElementById('simple_format_options');
             const verboseLoggingOption = document.getElementById('verbose_logging_option');
-            const responseFormatSelect = document.getElementById('response_format');
 
             // Show caching settings only for cached drivers
             const isCachedDriver = driver === 'openrouterjsoncached' || driver === 'openrouterjsoncached_verbose';
@@ -668,21 +692,45 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
 
             // Show verbose logging option only for verbose driver
             if (verboseLoggingOption) verboseLoggingOption.style.display = (driver === 'openrouterjsoncached_verbose') ? '' : 'none';
-
-            // Show simple format options based on response_format selection
-            if (responseFormatSelect && simpleFormatOptions) {
-                simpleFormatOptions.style.display = (responseFormatSelect.value === 'simple') ? '' : 'none';
-            }
-        }
-
-        // Listen for response format changes
-        const responseFormatSelect = document.getElementById('response_format');
-        if (responseFormatSelect) {
-            responseFormatSelect.addEventListener('change', updateCachingSettings);
         }
 
         // Initial call to set correct visibility
         updateCachingSettings();
+
+        // Collapsible section handlers
+        (function(){
+            const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+            collapsibleHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const content = document.getElementById(targetId);
+                    const arrow = this.querySelector('.collapse-arrow');
+
+                    if (content) {
+                        const isCurrentlyHidden = content.style.display === 'none' || !content.style.display;
+                        content.style.display = isCurrentlyHidden ? '' : 'none';
+                        if (arrow) arrow.textContent = isCurrentlyHidden ? '▲' : '▼';
+
+                        // Save state to localStorage
+                        try {
+                            localStorage.setItem('llm_collapse_' + targetId, isCurrentlyHidden ? 'open' : 'closed');
+                        } catch(e) {}
+                    }
+                });
+
+                // Restore state from localStorage
+                const targetId = header.getAttribute('data-target');
+                const content = document.getElementById(targetId);
+                const arrow = header.querySelector('.collapse-arrow');
+                try {
+                    const savedState = localStorage.getItem('llm_collapse_' + targetId);
+                    if (savedState === 'open' && content) {
+                        content.style.display = '';
+                        if (arrow) arrow.textContent = '▲';
+                    }
+                } catch(e) {}
+            });
+        })();
     })();
     </script>
     <div id="toast" class="toast-notification" style="position:static; margin: 8px auto 12px; display:block; opacity:0; transform:none; max-width:960px; width: calc(100% - 20px);"><span class="message"></span></div>
@@ -1432,34 +1480,8 @@ $effortLevel = $metadataArr["effort_level"] ?? '';
                     <option value="Gemini" <?= ($metadata_main['provider_caching'] ?? '') === 'Gemini' ? 'selected' : '' ?>>Gemini</option>
                 </select><br>
 
-                <label for='response_format_main'>Response Format</label><br>
-                <select name="metadata[response_format]" id="response_format_main">
-                    <option value="json" <?= ($metadata_main['response_format'] ?? 'json') === 'json' ? 'selected' : '' ?>>JSON (structured)</option>
-                    <option value="simple" <?= ($metadata_main['response_format'] ?? '') === 'simple' ? 'selected' : '' ?>>Simple (natural language)</option>
-                </select><br>
-
                 <label for='dialogue_cache_uncached_count_main'><span class='tip-label' data-tip='Number of most recent dialogue entries to keep uncached (0-10)'>Uncached Dialogue Count</span></label><br>
                 <input type='number' name='metadata[dialogue_cache_uncached_count]' id='dialogue_cache_uncached_count_main' value='<?= htmlspecialchars($metadata_main['dialogue_cache_uncached_count'] ?? '4') ?>' min='0' max='10' step='1'><br>
-
-                <div id="simple_format_options_main" style="display:none; margin-top:12px; padding:8px; border-left:3px solid #176529;">
-                    <div style="font-size:13px; font-weight:600; margin-bottom:8px;">Simple Format Content Options:</div>
-                    <label class="label-with-toggle"><span>Include Mood</span>
-                        <input type="hidden" name="metadata[include_mood_requirement]" value="0">
-                        <input type="checkbox" name="metadata[include_mood_requirement]" value="1" <?= (!isset($metadata_main['include_mood_requirement']) || $metadata_main['include_mood_requirement']) ? 'checked' : '' ?>>
-                    </label><br>
-                    <label class="label-with-toggle"><span>Include Listener</span>
-                        <input type="hidden" name="metadata[include_listener_requirement]" value="0">
-                        <input type="checkbox" name="metadata[include_listener_requirement]" value="1" <?= (!isset($metadata_main['include_listener_requirement']) || $metadata_main['include_listener_requirement']) ? 'checked' : '' ?>>
-                    </label><br>
-                    <label class="label-with-toggle"><span>Include Actions</span>
-                        <input type="hidden" name="metadata[include_actions_list]" value="0">
-                        <input type="checkbox" name="metadata[include_actions_list]" value="1" <?= (!isset($metadata_main['include_actions_list']) || $metadata_main['include_actions_list']) ? 'checked' : '' ?>>
-                    </label><br>
-                    <label class="label-with-toggle"><span>Include Target</span>
-                        <input type="hidden" name="metadata[include_target_requirement]" value="0">
-                        <input type="checkbox" name="metadata[include_target_requirement]" value="1" <?= (!isset($metadata_main['include_target_requirement']) || $metadata_main['include_target_requirement']) ? 'checked' : '' ?>>
-                    </label>
-                </div>
 
                 <div id="verbose_logging_option_main" style="display:none; margin-top:12px;">
                     <label class="label-with-toggle"><span class='tip-label' data-tip='Enable detailed logging for testing (verbose connector only)'>Verbose Logging</span>
@@ -1467,6 +1489,66 @@ $effortLevel = $metadataArr["effort_level"] ?? '';
                         <input type="checkbox" name="metadata[verbose_logging]" value="1" <?= (!isset($metadata_main['verbose_logging']) || $metadata_main['verbose_logging']) ? 'checked' : '' ?>>
                         <span class="toggle-text">On</span>
                     </label>
+                </div>
+
+                <div style="margin-top:12px;">
+                    <label class="label-with-toggle"><span class='tip-label' data-tip='Recommended ON for advanced models (Claude 4.5, GPT-4, Gemini 2.0). Uses minimal quality instructions. Turn OFF for older/smaller models that benefit from explicit guidance.'>Minimize Quality Instructions (Recommended)</span>
+                        <input type="hidden" name="metadata[minimize_quality_prompt]" value="0">
+                        <input type="checkbox" name="metadata[minimize_quality_prompt]" value="1" <?= (!isset($metadata_main['minimize_quality_prompt']) || $metadata_main['minimize_quality_prompt']) ? 'checked' : '' ?>>
+                        <span class="toggle-text">On</span>
+                    </label>
+                </div>
+
+                <!-- Response Format Section (Collapsible) - MAIN EDITOR -->
+                <div style="margin-top:16px; border:1px solid #4a4a4a; border-radius:8px; background:#252525;">
+                    <div class="collapsible-header" data-target="response_format_section_main" style="padding:10px; cursor:pointer; user-select:none; font-weight:600; color:#e9efff; display:flex; justify-content:space-between; align-items:center;">
+                        <span>📝 Response Format</span>
+                        <span class="collapse-arrow">▼</span>
+                    </div>
+                    <div id="response_format_section_main" class="collapsible-content" style="padding:10px; display:none;">
+                        <label for='response_format_main'>Response Format</label><br>
+                        <select name="metadata[response_format]" id="response_format_main">
+                            <option value="json" <?= ($metadata_main['response_format'] ?? 'json') === 'json' ? 'selected' : '' ?>>JSON (structured)</option>
+                            <option value="simple" <?= ($metadata_main['response_format'] ?? '') === 'simple' ? 'selected' : '' ?>>Simple (natural language)</option>
+                        </select><br>
+
+                        <div style="margin-top:12px;">
+                            <label class="label-with-toggle"><span class='tip-label' data-tip='Include action selection in response format. Required for NPCs to perform actions.'>Include Actions</span>
+                                <input type="hidden" name="metadata[include_actions_list]" value="0">
+                                <input type="checkbox" name="metadata[include_actions_list]" value="1" <?= (!isset($metadata_main['include_actions_list']) || $metadata_main['include_actions_list']) ? 'checked' : '' ?>>
+                            </label><br>
+                            <label class="label-with-toggle"><span class='tip-label' data-tip='Include mood/emotion in response. Used for NPC animations and expressions.'>Include Mood</span>
+                                <input type="hidden" name="metadata[include_mood_requirement]" value="0">
+                                <input type="checkbox" name="metadata[include_mood_requirement]" value="1" <?= (!isset($metadata_main['include_mood_requirement']) || $metadata_main['include_mood_requirement']) ? 'checked' : '' ?>>
+                            </label><br>
+                            <label class="label-with-toggle"><span class='tip-label' data-tip='Include action target (who/what the action is directed at).'>Include Target</span>
+                                <input type="hidden" name="metadata[include_target_requirement]" value="0">
+                                <input type="checkbox" name="metadata[include_target_requirement]" value="1" <?= (!isset($metadata_main['include_target_requirement']) || $metadata_main['include_target_requirement']) ? 'checked' : '' ?>>
+                            </label><br>
+                            <label class="label-with-toggle"><span class='tip-label' data-tip='Include listener field (who the NPC is talking to). Useful for multi-NPC conversations.'>Include Listener</span>
+                                <input type="hidden" name="metadata[include_listener_requirement]" value="0">
+                                <input type="checkbox" name="metadata[include_listener_requirement]" value="1" <?= (!isset($metadata_main['include_listener_requirement']) || $metadata_main['include_listener_requirement']) ? 'checked' : '' ?>>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Settings Section (Collapsible) - MAIN EDITOR -->
+                <div style="margin-top:16px; border:1px solid #4a4a4a; border-radius:8px; background:#252525;">
+                    <div class="collapsible-header" data-target="advanced_settings_section_main" style="padding:10px; cursor:pointer; user-select:none; font-weight:600; color:#e9efff; display:flex; justify-content:space-between; align-items:center;">
+                        <span>⚙️ Advanced Settings</span>
+                        <span class="collapse-arrow">▼</span>
+                    </div>
+                    <div id="advanced_settings_section_main" class="collapsible-content" style="padding:10px; display:none;">
+                        <label for='max_dialogue_cache_context_size_main'><span class='tip-label' data-tip='Maximum number of dialogue entries to cache in temp files. Higher = more context but larger cache files. Recommended: 93'>Max Dialogue Cache Context Size</span></label><br>
+                        <input type='number' name='metadata[max_dialogue_cache_context_size]' id='max_dialogue_cache_context_size_main' value='<?= htmlspecialchars($metadata_main['max_dialogue_cache_context_size'] ?? '93') ?>' min='0' step='1'><br>
+
+                        <label for='custom_system_instruction_main'><span class='tip-label' data-tip='Additional instruction added to the system prompt (after character bio, before dialogue history). Does NOT replace other instructions.'>Custom System Instruction</span></label><br>
+                        <textarea name='metadata[custom_system_instruction]' id='custom_system_instruction_main' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata_main['custom_system_instruction'] ?? '') ?></textarea><br>
+
+                        <label for='custom_last_instruction_main'><span class='tip-label' data-tip='Custom text inserted as second-to-last element in dialogue history (current user message is always last). Appears right before user current request.'>Custom Last Instruction</span></label><br>
+                        <textarea name='metadata[custom_last_instruction]' id='custom_last_instruction_main' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata_main['custom_last_instruction'] ?? '') ?></textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1658,9 +1740,7 @@ function updateCachingSettingsMain(){
     const driverSelect = document.getElementById('driver_select');
     const driver = driverInput ? driverInput.value : (driverSelect ? driverSelect.value : '');
     const cachingSettings = document.getElementById('caching_settings_main');
-    const simpleFormatOptions = document.getElementById('simple_format_options_main');
     const verboseLoggingOption = document.getElementById('verbose_logging_option_main');
-    const responseFormatSelect = document.getElementById('response_format_main');
 
     // Show caching settings only for cached drivers
     const isCachedDriver = driver === 'openrouterjsoncached' || driver === 'openrouterjsoncached_verbose';
@@ -1668,11 +1748,6 @@ function updateCachingSettingsMain(){
 
     // Show verbose logging option only for verbose driver
     if (verboseLoggingOption) verboseLoggingOption.style.display = (driver === 'openrouterjsoncached_verbose') ? '' : 'none';
-
-    // Show simple format options based on response_format selection
-    if (responseFormatSelect && simpleFormatOptions) {
-        simpleFormatOptions.style.display = (responseFormatSelect.value === 'simple') ? '' : 'none';
-    }
 }
 
 // Listen for response format changes in main editor
@@ -1683,6 +1758,39 @@ function updateCachingSettingsMain(){
     }
     // Initial call to set correct visibility
     updateCachingSettingsMain();
+
+    // Collapsible section handlers for main editor
+    const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+    collapsibleHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const content = document.getElementById(targetId);
+            const arrow = this.querySelector('.collapse-arrow');
+
+            if (content) {
+                const isCurrentlyHidden = content.style.display === 'none' || !content.style.display;
+                content.style.display = isCurrentlyHidden ? '' : 'none';
+                if (arrow) arrow.textContent = isCurrentlyHidden ? '▲' : '▼';
+
+                // Save state to localStorage
+                try {
+                    localStorage.setItem('llm_collapse_' + targetId, isCurrentlyHidden ? 'open' : 'closed');
+                } catch(e) {}
+            }
+        });
+
+        // Restore state from localStorage
+        const targetId = header.getAttribute('data-target');
+        const content = document.getElementById(targetId);
+        const arrow = header.querySelector('.collapse-arrow');
+        try {
+            const savedState = localStorage.getItem('llm_collapse_' + targetId);
+            if (savedState === 'open' && content) {
+                content.style.display = '';
+                if (arrow) arrow.textContent = '▲';
+            }
+        } catch(e) {}
+    });
 })();
 function llmClamp(rangeId, numberId, min, max){ const r = document.getElementById(rangeId); const n = document.getElementById(numberId); if (!r || !n) return; let v = parseFloat(n.value); if (isNaN(v)) v = min; if (v < min) v = min; if (v > max) v = max; n.value = v; r.value = v; }
 // Clear advanced settings (all below Temperature)
