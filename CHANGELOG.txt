@@ -2,6 +2,42 @@
 CHIM CACHED CONNECTOR - VERSION HISTORY
 ===============================================================================
 
+Version 1.0.15 (2025-11-10)
+---------------------------
+
+Documentation & Reference:
+--------------------------
+✓ **Added parameter precision backup file for reference**
+  - Created _par_precision_llm_connectors.php as backup of llm_connectors.php
+  - Preserves LLM parameter precision settings (temperature, penalties, top_p, etc.)
+  - Contains comprehensive header comments with:
+    * Warning that file must be deleted before production deployment
+    * Instructions to update when original file changes
+    * Note that Claude should not delete the file (only humans should)
+    * Location information for parameter precision settings
+    * Current precision documentation (step=>0.01 for 2 decimal places)
+  - Parameter precision locations documented:
+    * Embedded editor: lines ~495-504
+    * Modal editor: lines ~1561-1570
+
+Files Added:
+------------
+• ui/core/_par_precision_llm_connectors.php - Parameter precision backup file
+
+Files Modified:
+---------------
+• connector/openrouterjsoncached.php - Version updated to 1.0.15
+• connector/openrouterjsoncached_verbose.php - Version updated to 1.0.15
+
+Technical Notes:
+----------------
+- Backup file contains complete copy of llm_connectors.php
+- To change decimal precision: modify step value in $ranges arrays
+  (e.g., 0.001 for 3 decimals, 0.0001 for 4 decimals)
+- File size: ~157KB
+
+===============================================================================
+
 Version 1.0.14 (2025-11-10)
 ---------------------------
 
