@@ -2,6 +2,47 @@
 CHIM CACHED CONNECTOR - VERSION HISTORY
 ===============================================================================
 
+Version 1.0.14 (2025-11-10)
+---------------------------
+
+UI Improvements:
+----------------
+✓ **Added collapsible sections for better settings organization**
+  - Added "Response Format" collapsible section containing:
+    * Response Format dropdown (JSON/Simple)
+    * Include Actions checkbox
+    * Include Mood checkbox
+    * Include Target checkbox
+    * Include Listener checkbox
+  - Added "Advanced Settings" collapsible section containing:
+    * Max Dialogue Cache Context Size
+    * Custom System Instruction (textarea)
+    * Custom Last Instruction (textarea)
+  - Sections are collapsed by default to reduce UI clutter
+  - Click header to expand/collapse with visual arrow indicators (▼/▲)
+  - Section state persists via localStorage across page reloads
+  - Applied to both embedded editor and main modal editor
+
+Bug Fixes:
+----------
+✓ **Fixed collapsible section toggle bug**
+  - Sections can now be properly collapsed after being expanded
+  - Fixed logic error in visibility detection (was checking empty string incorrectly)
+  - Changed from using empty string to explicit 'block'/'none' display values
+
+Files Modified:
+---------------
+• ui/core/llm_connectors.php - Added collapsible sections, fixed toggle bug
+• connector/openrouterjsoncached.php - Version updated to 1.0.14
+• connector/openrouterjsoncached_verbose.php - Version updated to 1.0.14
+
+Technical Notes:
+----------------
+- LLM parameter decimal precision is controlled by step values in ui/core/llm_connectors.php:
+  * Lines 496-503 (embedded editor): step=>0.01 allows 2 decimal places
+  * Lines 1562-1569 (main modal): step=>0.01 allows 2 decimal places
+  * To change precision, modify the 'step' value (e.g., 0.001 for 3 decimals)
+
 Version 1.0.13 (2025-11-10)
 ---------------------------
 

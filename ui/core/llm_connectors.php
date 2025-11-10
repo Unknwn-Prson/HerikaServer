@@ -707,13 +707,13 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                     const arrow = this.querySelector('.collapse-arrow');
 
                     if (content) {
-                        const isCurrentlyHidden = content.style.display === 'none' || !content.style.display;
-                        content.style.display = isCurrentlyHidden ? '' : 'none';
-                        if (arrow) arrow.textContent = isCurrentlyHidden ? '▲' : '▼';
+                        const isCurrentlyVisible = content.style.display !== 'none' && content.style.display !== '';
+                        content.style.display = isCurrentlyVisible ? 'none' : 'block';
+                        if (arrow) arrow.textContent = isCurrentlyVisible ? '▼' : '▲';
 
                         // Save state to localStorage
                         try {
-                            localStorage.setItem('llm_collapse_' + targetId, isCurrentlyHidden ? 'open' : 'closed');
+                            localStorage.setItem('llm_collapse_' + targetId, isCurrentlyVisible ? 'closed' : 'open');
                         } catch(e) {}
                     }
                 });
@@ -725,7 +725,7 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                 try {
                     const savedState = localStorage.getItem('llm_collapse_' + targetId);
                     if (savedState === 'open' && content) {
-                        content.style.display = '';
+                        content.style.display = 'block';
                         if (arrow) arrow.textContent = '▲';
                     }
                 } catch(e) {}
@@ -1768,13 +1768,13 @@ function updateCachingSettingsMain(){
             const arrow = this.querySelector('.collapse-arrow');
 
             if (content) {
-                const isCurrentlyHidden = content.style.display === 'none' || !content.style.display;
-                content.style.display = isCurrentlyHidden ? '' : 'none';
-                if (arrow) arrow.textContent = isCurrentlyHidden ? '▲' : '▼';
+                const isCurrentlyVisible = content.style.display !== 'none' && content.style.display !== '';
+                content.style.display = isCurrentlyVisible ? 'none' : 'block';
+                if (arrow) arrow.textContent = isCurrentlyVisible ? '▼' : '▲';
 
                 // Save state to localStorage
                 try {
-                    localStorage.setItem('llm_collapse_' + targetId, isCurrentlyHidden ? 'open' : 'closed');
+                    localStorage.setItem('llm_collapse_' + targetId, isCurrentlyVisible ? 'closed' : 'open');
                 } catch(e) {}
             }
         });
@@ -1786,7 +1786,7 @@ function updateCachingSettingsMain(){
         try {
             const savedState = localStorage.getItem('llm_collapse_' + targetId);
             if (savedState === 'open' && content) {
-                content.style.display = '';
+                content.style.display = 'block';
                 if (arrow) arrow.textContent = '▲';
             }
         } catch(e) {}
