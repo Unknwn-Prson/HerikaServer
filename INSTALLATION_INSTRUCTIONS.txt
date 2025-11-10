@@ -1,165 +1,131 @@
 ===============================================================================
-CHIM CACHED CONNECTOR - TESTING PACKAGE
+CHIM CACHED CONNECTOR v1.0.16 - INSTALLATION INSTRUCTIONS
 ===============================================================================
 
-COMPATIBILITY NOTICE:
----------------------
-✓ TESTED ON: CHIM 2.0.3
-✓ LIKELY COMPATIBLE: CHIM 2.0.1, 2.0.2 (should work fine)
-✓ POSSIBLY COMPATIBLE: CHIM 2.0.0 (untested, but should work)
-
-This package adds caching support to CHIM's OpenRouter connector, designed to
-reduce API costs by reusing cached context across conversations.
+IMPORTANT: Version 1.0.16 includes increased parameter precision (4 decimals
+instead of 2) to allow values like 0.1234 for temperature and other LLM
+parameters.
 
 ===============================================================================
-INSTALLATION INSTRUCTIONS
+INSTALLATION STEPS
 ===============================================================================
 
-1. **BACKUP YOUR FILES FIRST!** (CRITICAL!)
-   -------------------------------------------
-   You MUST backup these files before proceeding:
-   ✓ conf/conf_schema.json
-   ✓ lib/core/llm_connector.class.php
-   ✓ ui/core/llm_connectors.php
+1. BACKUP YOUR EXISTING FILES FIRST
+   Before installing, backup these files if they exist:
+   - HerikaServer/connector/openrouterjsoncached.php
+   - HerikaServer/connector/openrouterjsoncached_verbose.php
+   - HerikaServer/connector/openrouterjsoncached_helpers.php
+   - HerikaServer/ui/core/llm_connectors.php
 
-   If anything goes wrong, you'll need these backups to restore your system!
+2. EXTRACT AND COPY FILES
+   Copy the files from this zip to your HerikaServer directory, maintaining
+   the directory structure:
 
-2. **Extract Files to Your HerikaServer Directory**
-   ------------------------------------------------
-   Extract the following files from this zip to your HerikaServer root:
+   connector/openrouterjsoncached.php                → HerikaServer/connector/
+   connector/openrouterjsoncached_verbose.php        → HerikaServer/connector/
+   connector/openrouterjsoncached_helpers.php        → HerikaServer/connector/
+   ui/core/llm_connectors.php                        → HerikaServer/ui/core/
+   ui/core/_par_precision_llm_connectors.php         → HerikaServer/ui/core/
 
-   - connector/openrouterjsoncached.php          (New connector - production)
-   - connector/openrouterjsoncached_helpers.php  (Helper functions)
-   - connector/openrouterjsoncached_verbose.php  (Testing version with logging)
-   - conf/conf_schema.json                       (OVERWRITE existing file)
-   - lib/core/llm_connector.class.php            (OVERWRITE existing file)
-   - ui/core/llm_connectors.php                  (OVERWRITE existing file)
-   - ui/events-memories.php                      (OVERWRITE existing file - fixes display bug)
+3. DELETE THE BACKUP FILE (BEFORE PRODUCTION)
+   The file _par_precision_llm_connectors.php is a backup for reference only.
+   - Keep it during development/testing
+   - DELETE it before deploying to production
+   - Do NOT let Claude (AI) delete it - only humans should
 
-3. **No Server Restart Required**
-   ------------------------------
-   CHIM does NOT need to be restarted after installing these files.
-   Changes will take effect immediately.
+4. CLEAR BROWSER CACHE
+   After copying files, you MUST clear your browser cache:
+   - Chrome/Edge: Ctrl + Shift + Delete → Clear cached images and files
+   - Firefox: Ctrl + Shift + Delete → Cache
+   - Or do a hard refresh: Ctrl + F5 (Windows) or Cmd + Shift + R (Mac)
 
-4. **Configure in WebUI**
-   ----------------------
-   - Access your CHIM WebUI (typically http://localhost:PORT)
-   - Navigate to Configuration → LLM Connectors tab
-   - Click to create a new connector or edit an existing one
-   - For "Service", select "Custom" to reveal the Driver dropdown
-   - In the "Driver" dropdown, select:
-     * "OpenRouter JSON (Cached + Verbose Logging)" for testing
-     * OR "OpenRouter JSON (Cached)" for production use
-   - Configure the connector settings:
-     * URL: https://openrouter.ai/api/v1/chat/completions
-     * Model: Your model (e.g., anthropic/claude-sonnet-4.5)
-     * API Key: Your OpenRouter API key
-     * Provider Caching: Choose "Anthropic", "OpenAI", or "Gemini"
-     * Response Format: "json" (recommended) or "simple"
-     * Verbose Logging: Keep ENABLED for testing phase (verbose version only)
-   - Save the connector
-
-5. **Assign Connector to Profile/NPC**
-   -----------------------------------
-   CHIM 2.0 uses a Profile system:
-   - Go to Profiles section in WebUI
-   - Edit the profile you want to use caching with
-   - Set the connector to "openrouterjsoncached_verbose"
-   - Save changes
+5. VERIFY INSTALLATION
+   - Open HerikaServer web interface
+   - Go to LLM Connectors configuration page
+   - Try entering a value like 0.1234 in temperature field
+   - Should now accept up to 4 decimal places without "please enter a valid
+     value" error
 
 ===============================================================================
-TESTING & DIAGNOSTICS
+FILE DESCRIPTIONS
 ===============================================================================
 
-LOG FILE LOCATIONS:
--------------------
-After running conversations, check these log files for diagnostic information:
+connector/openrouterjsoncached.php
+  Main cached connector with Anthropic/OpenAI/Gemini cache support
+  Includes JSON and Simple format response options
+  Version: 1.0.16
 
-1. **log/cache.log** (PRIMARY)
-   - Contains all [CACHE-VERBOSE] logging output
-   - Shows cache control calculations
-   - Most important for debugging
+connector/openrouterjsoncached_verbose.php
+  Verbose variant with comprehensive debugging logs
+  Use for testing and troubleshooting
+  Version: 1.0.16
 
-   Filter for verbose logs:
-   grep "[CACHE-VERBOSE]" log/cache.log
+connector/openrouterjsoncached_helpers.php
+  Helper functions for format parsing and instruction building
+  Required by both main and verbose connectors
 
-2. **connector/_cached_perf.log**
-   - Cache performance metrics
-   - Shows cache read/create token counts
-   - Shows efficiency percentages
+ui/core/llm_connectors.php
+  LLM connector configuration UI
+  NOW SUPPORTS 4 DECIMAL PLACES (was 2 decimals in older versions)
+  Includes collapsible sections for better organization
 
-3. **log/context_sent_to_llm.log**
-   - Full API payload logging
-   - See exact JSON sent to LLM
-
-4. **log/debugStream.log**
-   - Raw streaming response data
-   - API response details
-
-WHAT TO LOOK FOR:
------------------
-✓ Does the connector load without errors?
-✓ Does log/cache.log show cache control calculations?
-✓ Does connector/_cached_perf.log show cache read tokens > 0?
-✓ Do conversations flow normally without weird responses?
+ui/core/_par_precision_llm_connectors.php
+  Backup reference file (DELETE BEFORE PRODUCTION)
+  Contains parameter precision settings documentation
+  Should be updated when original llm_connectors.php changes
 
 ===============================================================================
-ROLLBACK INSTRUCTIONS
+WHAT'S NEW IN v1.0.16
 ===============================================================================
 
-If you encounter issues and need to rollback:
+✓ Increased LLM parameter decimal precision from 2 to 4 decimals
+  - OLD: Could only enter 0.12 (limited to 2 decimal places)
+  - NEW: Can enter 0.1234 (up to 4 decimal places)
 
-1. Restore your backed-up files:
-   - conf/conf_schema.json (from your backup)
-   - lib/core/llm_connector.class.php (from your backup)
-   - ui/core/llm_connectors.php (from your backup)
+✓ Affects these parameters:
+  - temperature
+  - presence_penalty
+  - frequency_penalty
+  - repetition_penalty
+  - top_p
+  - min_p
+  - top_a
 
-2. Delete the new connector files:
-   - connector/openrouterjsoncached.php
-   - connector/openrouterjsoncached_helpers.php
-   - connector/openrouterjsoncached_verbose.php
-
-3. Switch your profiles back to a different connector (openrouterjson, etc.)
-
-===============================================================================
-WHY BACKWARDS COMPATIBILITY LIKELY WORKS
-===============================================================================
-
-This package should work on CHIM 2.0.0-2.0.3 because:
-
-✓ Only adds new files (doesn't break existing code)
-✓ Uses existing helper functions (__jpd.php, tokenizer functions)
-✓ Follows same connector patterns as other CHIM 2.0 connectors
-✓ Uses standard metadata/profile system introduced in CHIM 2.0.0
-
-Potential issues on CHIM 2.0.0:
-- The profile/metadata system may have been less mature
-- Minor schema differences in early 2.0.0 releases
-- Edge cases in database column handling
-
-Confidence level: 75-85% compatible with all 2.0.x versions
+✓ Resolves "please enter a valid value" validation errors
 
 ===============================================================================
-REPORTING ISSUES
+TROUBLESHOOTING
 ===============================================================================
 
-If you encounter problems, please provide:
-1. Your CHIM version (check WebUI footer or package.json)
-2. Relevant log excerpts from log/cache.log (with [CACHE-VERBOSE] entries)
-3. Any PHP errors from your web server logs
-4. Description of what went wrong (errors, weird responses, etc.)
+Issue: Still getting "please enter a valid value" error
+Solution:
+  1. Verify you copied ui/core/llm_connectors.php to the correct location
+  2. Clear browser cache completely (Ctrl + Shift + Delete)
+  3. Do a hard refresh (Ctrl + F5)
+  4. Check file permissions (should be readable by web server)
+  5. Verify you're editing the LLM Connector (not Profile settings)
+
+Issue: Changes don't appear in UI
+Solution:
+  1. Hard refresh browser (Ctrl + F5)
+  2. Clear all browser cache
+  3. Restart web server if needed
+  4. Check file timestamps to confirm new files are in place
+
+Issue: Connector doesn't work
+Solution:
+  1. Verify all three connector files were copied
+  2. Check PHP error logs
+  3. Ensure helpers file is present
+  4. Try the verbose connector for detailed logging
 
 ===============================================================================
-PRODUCTION USE (After Testing)
+SUPPORT & CHANGELOG
 ===============================================================================
 
-Once testing confirms everything works:
+For complete version history and technical details, see CHANGELOG.txt
 
-1. Switch from "openrouterjsoncached_verbose" to "openrouterjsoncached"
-   (The production version without verbose logging overhead)
-
-2. Or, disable verbose logging in the verbose connector:
-   - Go to connector settings
-   - Set "Verbose Logging" to DISABLED
+For issues or questions, refer to the HerikaServer documentation or
+community support channels.
 
 ===============================================================================
