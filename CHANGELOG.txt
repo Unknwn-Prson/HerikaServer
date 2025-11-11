@@ -2,6 +2,39 @@
 CHIM CACHED CONNECTOR - VERSION HISTORY
 ===============================================================================
 
+Version 1.0.18 (2025-11-10)
+---------------------------
+
+Bug Fixes:
+----------
+✓ **CRITICAL: Fixed simple format spacing and parsing issues**
+  - Fixed regex pattern to allow optional colons after format markers
+  - LLMs were outputting "(mood):" instead of "(mood) ", breaking regex match
+  - Updated pattern from `/\)\s*(.*)$/` to `/\)\s*:?\s*(.*)$/` to handle colons
+  - Updated instructions to explicitly say "(no colon)" and "proper spacing between words"
+  - This fixes the issue where text appeared as "lovelysetsdowntheleather" without spaces
+
+  Root cause: LLMs were adding colons after format markers like "(lovely):"
+  which didn't match the regex pattern `\(([^)]+)\)`, causing parse failure
+  and triggering the fallback that returned the unprocessed buffer.
+
+Files Modified:
+---------------
+• connector/openrouterjsoncached_helpers.php:
+  - Line 544: Updated regex to accept optional colon: `\s*:?\s*`
+  - Line 497: Added instruction "(no colon)" and "with proper spacing between words"
+• connector/openrouterjsoncached.php - Version updated to 1.0.18
+• connector/openrouterjsoncached_verbose.php - Version updated to 1.0.18
+
+Technical Notes:
+----------------
+- Regex now handles both "(mood) message" and "(mood): message" formats
+- Explicit instruction to LLM about proper spacing should prevent compressed text
+- Format markers are now correctly stripped from output
+- Messages should appear with proper word spacing in-game
+
+===============================================================================
+
 Version 1.0.17 (2025-11-10)
 ---------------------------
 
