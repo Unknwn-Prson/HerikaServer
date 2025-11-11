@@ -494,7 +494,7 @@ function buildSimpleFormatInstruction($includeMood, $includeListener, $includeAc
     if ($includeTarget) $descriptions[] = "action target";
 
     $instruction .= implode(", ", $descriptions);
-    $instruction .= " in parentheses like this: {$formatExample} (no colon), then provide your dialogue naturally with proper spacing between words. ";
+    $instruction .= " in parentheses like this: {$formatExample}, then provide your dialogue naturally. ";
 
     if ($includeMood && isset($GLOBALS["EMOTEMOODS"]) && !empty($GLOBALS["EMOTEMOODS"])) {
         $instruction .= "Valid moods: " . $GLOBALS["EMOTEMOODS"] . ". ";
@@ -540,8 +540,7 @@ function extractSimpleFormatFromBuffer($buffer, $includeMood, $includeListener, 
     }
 
     $groupPattern = str_repeat('\(([^)]+)\)', $groupCount);
-    // Make pattern more flexible: allow optional colons/punctuation and whitespace after format markers
-    $pattern = '/^\s*' . $groupPattern . '\s*:?\s*(.*)$/s';
+    $pattern = '/^\s*' . $groupPattern . '\s*(.*)$/s';
 
     if (preg_match($pattern, $buffer, $matches)) {
         $groups = [];
