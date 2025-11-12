@@ -1,0 +1,179 @@
+# CHIM Cached Connector v1.1.2 - Installation Instructions
+
+**Version**: 1.1.2
+**Release Date**: 2025-11-12
+**Compatibility**: CHIM 2.0.3+
+**Based On**: v1.0.19f functional baseline
+
+---
+
+## What's New in v1.1.2
+
+### Critical Fixes
+1. **Fixed Duplicate Memory Timing (CRITICAL)** - Cache markers now stay on correct messages
+2. **Restored TEMPLATE_DIALOG** - LLM now receives roleplay instruction controlled by minimize_quality_prompt
+
+### Features from v1.1.0-v1.1.1
+- Collapsible UI sections for better organization
+- Gemini cache bounds checking
+- Response format controls (JSON/Simple with toggles)
+
+---
+
+## Installation Steps
+
+### 1. Backup Current Files (IMPORTANT!)
+
+Backup these files before installing:
+```
+connector/openrouterjson*.php (if using cached connector)
+ui/core/llm_connectors.php
+conf/conf_schema.json
+```
+
+### 2. Extract Files
+
+Extract all files from the zip, maintaining the directory structure:
+```
+HerikaServer/
+├── connector/
+│   ├── openrouterjsoncached.php
+│   ├── openrouterjsoncached_helpers.php
+│   └── openrouterjsoncached_verbose.php
+├── ui/core/llm_connectors.php
+├── conf/conf_schema.json
+├── lib/
+│   ├── core/llm_connector.class.php
+│   ├── chat_helper_functions.php
+│   └── data_functions.php
+├── ui/events-memories.php
+└── prompts/dialogue_prompt.php
+```
+
+### 3. Verify Installation
+
+Check that version is correct:
+- Look in connector file header for: `v1.1.2 for CHIM 2.0.3 | 2025/11/12`
+
+### 4. Configure Connector
+
+In CHIM WebUI:
+1. Go to **Profiles** or **LLM Connectors**
+2. Select or create connector with driver: `openrouterjsoncached`
+3. Configure settings:
+   - **Provider Caching**: Anthropic, OpenAI, or Gemini
+   - **Response Format**: JSON or Simple
+   - **Uncached Count**: 4 (recommended)
+   - **Minimize Quality Instructions**: Enabled for advanced models (Claude 4.5, GPT-4)
+
+### 5. Test Configuration
+
+Run a conversation and check logs:
+```
+log/cache.log - Look for:
+  "Added TEMPLATE_DIALOG to uncached section"
+  "Cache control placed at index X"
+  "Removed X duplicate memories before cache calculation"
+```
+
+---
+
+## Configuration Options
+
+### Caching Settings (Not Collapsible)
+- **Provider Caching Type**: Anthropic, OpenAI, or Gemini
+- **Uncached Dialogue Count**: How many recent messages stay uncached (default: 4)
+- **Minimize Quality Instructions**: Short vs verbose dialogue instruction
+
+### Response Format (Collapsible)
+- **Response Format**: JSON (structured) or Simple (natural with markers)
+- **Include Mood**: Toggle mood requirement
+- **Include Listener**: Toggle listener specification
+- **Include Actions**: Toggle action selection
+- **Include Target**: Toggle action target (required if actions enabled)
+
+### Advanced Settings (Collapsible)
+- **Max Dialogue Cache**: Maximum cached messages (default: 93)
+- **Custom System Instruction**: Additional system prompt
+- **Custom Last Instruction**: Instruction added near end (uncached)
+
+---
+
+## Troubleshooting
+
+### Issue: TEMPLATE_DIALOG not appearing in logs
+**Solution**: Ensure `prompts/dialogue_prompt.php` is being loaded by CHIM core
+
+### Issue: Duplicate memories not being removed
+**Solution**: Check logs for "Removed X duplicate memories" message
+
+### Issue: Cache markers on wrong messages
+**Solution**: This was fixed in v1.1.2 - upgrade if on older version
+
+### Issue: LLM responses don't follow format
+**Solution**:
+- Check response format setting (JSON vs Simple)
+- Verify format instruction in logs
+- Check mood/action/target/listener toggles
+
+---
+
+## Files Included
+
+### Core Connector Files
+- `connector/openrouterjsoncached.php` - Main connector
+- `connector/openrouterjsoncached_helpers.php` - Helper functions
+- `connector/openrouterjsoncached_verbose.php` - Verbose logging version
+
+### Integration Files
+- `ui/core/llm_connectors.php` - UI with collapsible sections
+- `conf/conf_schema.json` - Configuration schema
+- `lib/core/llm_connector.class.php` - Connector loader
+- `lib/chat_helper_functions.php` - Chat utilities
+- `lib/data_functions.php` - Data management
+- `ui/events-memories.php` - Events/memories UI
+- `prompts/dialogue_prompt.php` - Dialogue template system
+
+### Documentation
+- `INSTALLATION_INSTRUCTIONS.txt` - This file
+- `CHANGELOG.txt` - Complete version history
+- `V1.1.2_CHANGES.md` - Detailed v1.1.2 changes
+
+---
+
+## Upgrade from Previous Versions
+
+### From v1.0.19f
+- Direct upgrade supported
+- All fixes included
+- UI improvements included
+
+### From v1.0.20-v1.0.24
+- Highly recommended - those versions had bugs
+- This version is based on v1.0.19f (last known good) with proper fixes
+
+### From v1.1.0-v1.1.1
+- Minor upgrade
+- Fixes critical duplicate memory bug
+- Restores missing TEMPLATE_DIALOG
+
+---
+
+## Support & Feedback
+
+**Issues**: Report at https://github.com/Unknwn-Prson/HerikaServer/issues
+**Documentation**: See included markdown files for detailed analysis
+
+---
+
+## Credits
+
+- **Original CHIM**: Dwemer Dynamics
+- **Cache Connector**: Based on v1.0.19f functional baseline
+- **v1.1.x Enhancements**: UI improvements, bug fixes, TEMPLATE_DIALOG restoration
+
+---
+
+## License
+
+Same as CHIM 2.0 - see main repository

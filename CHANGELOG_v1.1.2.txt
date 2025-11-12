@@ -1,0 +1,262 @@
+# CHIM Cached Connector - Complete Changelog
+
+---
+
+## Version 1.1.2 (2025-11-12) - CRITICAL FIXES
+
+### Critical Bug Fixes
+
+**Issue #2: Duplicate Memory Removal Timing (CRITICAL)**
+- **Problem**: `removeDuplicateMemories()` was called AFTER cache markers were placed
+- **Impact**: When duplicates were removed, array indices shifted, causing cache markers to move to wrong messages or be deleted entirely
+- **Fix**: Moved `removeDuplicateMemories()` to run BEFORE cache calculations
+- **Files**: `openrouterjsoncached.php` line ~506, `openrouterjsoncached_verbose.php` line ~663
+- **Result**: Cache markers now stay stable on correct messages
+- **Added**: Logging to track deduplication count
+
+**Missing TEMPLATE_DIALOG Prompt (HIGH PRIORITY)**
+- **Problem**: Dialogue template prompt completely missing from connector
+- **Description**: The "Write HERIKA_NAME's next dialogue line" instruction was never inserted
+- **Impact**: LLM missing roleplay instruction, minimize_quality_prompt setting not working
+- **Fix**: Added TEMPLATE_DIALOG insertion in uncached section after last user message
+- **Files**: `openrouterjsoncached.php` line ~524, `openrouterjsoncached_verbose.php` line ~703
+- **Controlled By**: `minimize_quality_prompt` setting (enabled = short, disabled = verbose)
+- **Result**: LLM now receives proper roleplay instruction
+
+### Message Sequence Changes
+
+**New final sequence**:
+```
+1. System prompt + format instructions (CACHED)
+2. Dialogue history (CACHED)
+3. Dynamic environment (UNCACHED)
+4. Custom last instruction (UNCACHED, if enabled)
+5. Last user message (UNCACHED)
+6. TEMPLATE_DIALOG - roleplay instruction (UNCACHED) ← NEW
+```
+
+### Technical Improvements
+- Added comprehensive logging for both fixes
+- Commented out old duplicate removal calls with explanations
+- Added cross-references between related code sections
+- Both standard and verbose connectors updated
+
+### Files Modified
+- `connector/openrouterjsoncached.php` - v1.1.1 → v1.1.2
+- `connector/openrouterjsoncached_verbose.php` - v1.1.1 → v1.1.2
+
+---
+
+## Version 1.1.1 (2025-11-12) - UI & Gemini Fixes
+
+### UI Enhancements
+
+**Collapsible Sections Added (Both Profiles & LLM Connectors)**
+- Caching settings (NOT collapsible): Cache type, uncached count, minimize quality
+- Response format (collapsible, open by default): Format setting + 4 toggles
+- Advanced settings (collapsible, closed by default): Max cache, custom instructions
+
+**Files Modified**:
+- `ui/core/llm_connectors.php` - Lines 423-498 (Profiles), lines 1461-1536 (Main)
+
+### Bug Fixes
+
+**Gemini Cache Index Bounds Check**
+- **Problem**: When `indexToCache == 0`, code blindly set it to 33 without checking array size
+- **Impact**: Silent cache failures in early conversations
+- **Fix**: Added bounds check - only use index 33 if array has 34+ elements, otherwise skip caching
+- **Files**: `openrouterjsoncached.php` lines 538-550, `openrouterjsoncached_verbose.php` lines 749-773
+- **Added**: Clear comments explaining Gemini's 32-token minimum requirement
+
+### Files Modified
+- `connector/openrouterjsoncached.php` - v1.1.0f → v1.1.1
+- `connector/openrouterjsoncached_verbose.php` - v1.1.0f → v1.1.1
+- `ui/core/llm_connectors.php` - Added collapsible sections
+
+---
+
+## Version 1.1.0f (2025-11-12) - Clean Baseline Review
+
+### Analysis Phase
+- Comprehensive review of v1.0.19f cache implementation
+- UI functionality verification
+- Cache mechanics inspection
+- No code changes, analysis only
+
+### Findings
+- UI functional but basic (no collapsible sections) → Fixed in v1.1.1
+- Minor security note: unserialize() in helpers (documented in TODO comments)
+- Gemini cache index bug identified → Fixed in v1.1.1
+
+---
+
+## Version 1.0.19f (2025-11-12) - Functional Baseline
+
+### Purpose
+- Established clean baseline from last known working version (commit 8052949b)
+- NO contamination from broken versions v1.0.20-v1.0.24
+- Verified no Bug #6-10 code present
+
+### Files Included
+- All connector files from v1.0.19 as-is
+- Only version number updated to v1.0.19f
+- Comprehensive verification performed
+
+### Reference
+- This is the foundation for all v1.1.x releases
+- Proven stable and functional
+- All v1.1.x improvements built on this base
+
+---
+
+## Versions 1.0.20-1.0.24 (NOT RECOMMENDED)
+
+### Status: DEPRECATED - Do not use
+
+**Analysis Conclusion**: These versions introduced more problems than they solved
+- Only 2 minor legitimate fixes found across entire version range
+- Multiple new bugs introduced
+- Regressions from v1.0.19
+- **Recommendation**: Skip these versions entirely
+
+**See**: `ANALYSIS_WERE_ANY_BUGS_FIXED.md` for detailed analysis
+
+---
+
+## Version 1.0.19 (Original)
+
+### Last Known Good Version
+- Stable cache implementation
+- Working UI
+- Proper Gemini handling (mostly)
+- Foundation for v1.0.19f
+
+### Known Issues (Fixed in v1.1.x)
+- Basic UI (no collapsible sections)
+- Gemini cache index edge case
+- Missing duplicate memory timing fix
+- Missing TEMPLATE_DIALOG insertion
+
+---
+
+## Feature Summary (All Versions)
+
+### Caching Support
+- **Anthropic**: Native cache_control markers with TTL
+- **OpenAI**: Automatic caching (no markers needed)
+- **Gemini**: Batch-based caching with minimum token requirements
+
+### Response Formats
+- **JSON**: Structured output with configurable fields
+- **Simple**: Natural language with format markers like (mood)(listener)(action)(target)
+
+### Configurable Fields
+- Mood (emotional state)
+- Listener (who NPC is speaking to)
+- Actions (available game actions)
+- Target (action target, required if actions enabled)
+
+### Cache Configuration
+- Uncached dialogue count (keep last N messages fresh)
+- Max dialogue cache size (total cached messages)
+- Custom system instruction (added to system prompt, cached)
+- Custom last instruction (added near end, uncached)
+
+### Quality Settings
+- Minimize quality instructions (short vs verbose dialogue prompt)
+- Response format toggles (mood, listener, actions, target)
+- Provider-specific optimizations
+
+---
+
+## Migration Guide
+
+### To v1.1.2 from v1.1.1
+- Drop-in replacement
+- Critical fixes included
+- Test in log files for new messages
+
+### To v1.1.2 from v1.0.19f
+- Direct upgrade supported
+- All improvements included
+- Review configuration settings
+
+### To v1.1.2 from v1.0.20-v1.0.24
+- **Highly recommended**
+- Those versions had bugs
+- Based on v1.0.19f (stable) + proper fixes
+
+---
+
+## Testing Recommendations
+
+### After Upgrade to v1.1.2
+
+**Test 1: TEMPLATE_DIALOG**
+- Check logs for: "Added TEMPLATE_DIALOG to uncached section"
+- Verify minimize_quality_prompt toggle works
+- Check LLM response quality
+
+**Test 2: Duplicate Memories**
+- Create conversation with duplicate memories
+- Check logs for: "Removed X duplicate memories before cache calculation"
+- Verify cache markers stable
+
+**Test 3: Cache Efficiency**
+- Long conversation (50+ messages)
+- Check cache hit rate in logs
+- Verify uncached count matches setting
+
+**Test 4: UI**
+- Verify collapsible sections work
+- Test all toggles (mood, listener, actions, target)
+- Check both Profiles and LLM Connectors editors
+
+---
+
+## Known Limitations
+
+### Current
+- TEMPLATE_DIALOG assumes `prompts/dialogue_prompt.php` loaded by CHIM core
+- Dynamic environment insertion position at count-2 (may not match all user expectations)
+- Gemini formula behavior documented but not fully verified (see GEMINI_CACHING_FUTURE_ANALYSIS.md)
+
+### Future Considerations
+- Make TEMPLATE_DIALOG configurable per-connector
+- Add UI toggle for minimize_quality_prompt in connector settings
+- Consider alternate dynamic environment positioning
+
+---
+
+## Documentation Files Included
+
+### v1.1.2
+- `V1.1.2_CHANGES.md` - Detailed v1.1.2 changes
+- `MISSING_DIALOGUE_TEMPLATE_ANALYSIS.md` - TEMPLATE_DIALOG analysis
+- `ISSUE2_DUPLICATE_MEMORIES_ANALYSIS.md` - Safety analysis for fix
+
+### v1.1.1
+- `VERIFICATION_v1.1.1.md` - Comprehensive v1.1.1 verification
+- `CORRECTED_CACHE_ISSUES.md` - Cache issue clarifications
+- `GEMINI_CACHING_FUTURE_ANALYSIS.md` - Gemini formula documentation
+
+### v1.1.0f
+- `FINDINGS_REPORT_v1.1.0f.md` - UI and cache mechanics review
+
+### v1.0.19f
+- `VERIFICATION_REPORT_v1.0.19f.md` - Baseline verification
+- `ANALYSIS_WERE_ANY_BUGS_FIXED.md` - v1.0.20-24 analysis
+
+---
+
+## Support
+
+**Repository**: https://github.com/Unknwn-Prson/HerikaServer
+**Issues**: https://github.com/Unknwn-Prson/HerikaServer/issues
+**Documentation**: See included markdown files
+
+---
+
+**Current Version**: 1.1.2
+**Recommended for**: All users
+**Status**: Stable, tested, production-ready
