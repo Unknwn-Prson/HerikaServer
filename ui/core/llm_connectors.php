@@ -426,19 +426,19 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                     <div id="connector_version" style="font-size:0.85em; color:#999; margin-bottom:12px; font-style:italic;"></div>
 
                     <label for='provider_caching'>Provider Caching Type</label><br>
-                    <select name="metadata[provider_caching]" id="provider_caching">
+                    <select name="meta_vis[provider_caching]" id="provider_caching">
                         <option value="Anthropic" <?= ($metadata['provider_caching'] ?? 'Anthropic') === 'Anthropic' ? 'selected' : '' ?>>Anthropic</option>
                         <option value="OpenAI" <?= ($metadata['provider_caching'] ?? '') === 'OpenAI' ? 'selected' : '' ?>>OpenAI</option>
                         <option value="Gemini" <?= ($metadata['provider_caching'] ?? '') === 'Gemini' ? 'selected' : '' ?>>Gemini</option>
                     </select><br>
 
                     <label for='dialogue_cache_uncached_count'><span class='tip-label' data-tip='Number of most recent dialogue entries to keep uncached (0-10)'>Uncached Dialogue Count</span></label><br>
-                    <input type='number' name='metadata[dialogue_cache_uncached_count]' id='dialogue_cache_uncached_count' value='<?= htmlspecialchars($metadata['dialogue_cache_uncached_count'] ?? '4') ?>' min='0' max='10' step='1'><br>
+                    <input type='number' name='meta_vis[dialogue_cache_uncached_count]' id='dialogue_cache_uncached_count' value='<?= htmlspecialchars($metadata['dialogue_cache_uncached_count'] ?? '4') ?>' min='0' max='10' step='1'><br>
 
                     <div style="margin-top:12px;">
                         <label class="label-with-toggle"><span class='tip-label' data-tip='Recommended ON for advanced models (Claude 4.5, GPT-4, Gemini 2.0). Uses minimal quality instructions. Turn OFF for older/smaller models that benefit from explicit guidance.'>Minimize Quality Instructions (Recommended)</span>
-                            <input type="hidden" name="metadata[minimize_quality_prompt]" value="0">
-                            <input type="checkbox" name="metadata[minimize_quality_prompt]" value="1" <?= (!isset($metadata['minimize_quality_prompt']) || $metadata['minimize_quality_prompt']) ? 'checked' : '' ?>>
+                            <input type="hidden" name="meta_vis[minimize_quality_prompt]" value="0">
+                            <input type="checkbox" name="meta_vis[minimize_quality_prompt]" value="1" <?= (!isset($metadata['minimize_quality_prompt']) || $metadata['minimize_quality_prompt']) ? 'checked' : '' ?>>
                             <span class="toggle-text">On</span>
                         </label>
                     </div>
@@ -447,7 +447,7 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                         <summary class="collapsible-header">Response Format</summary>
                         <div class="collapsible-content">
                             <label for='response_format'>Response Format</label><br>
-                            <select name="metadata[response_format]" id="response_format">
+                            <select name="meta_vis[response_format]" id="response_format">
                                 <option value="json" <?= ($metadata['response_format'] ?? 'json') === 'json' ? 'selected' : '' ?>>JSON (structured)</option>
                                 <option value="simple" <?= ($metadata['response_format'] ?? '') === 'simple' ? 'selected' : '' ?>>Simple (natural language)</option>
                             </select><br>
@@ -455,20 +455,20 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                             <div id="simple_format_options" style="display:none; margin-top:12px; padding:8px; border-left:3px solid #176529;">
                                 <div style="font-size:13px; font-weight:600; margin-bottom:8px;">Simple Format Content Options:</div>
                                 <label class="label-with-toggle"><span>Include Mood</span>
-                                    <input type="hidden" name="metadata[include_mood_requirement]" value="0">
-                                    <input type="checkbox" name="metadata[include_mood_requirement]" value="1" <?= (!isset($metadata['include_mood_requirement']) || $metadata['include_mood_requirement']) ? 'checked' : '' ?>>
+                                    <input type="hidden" name="meta_vis[include_mood_requirement]" value="0">
+                                    <input type="checkbox" name="meta_vis[include_mood_requirement]" value="1" <?= (!isset($metadata['include_mood_requirement']) || $metadata['include_mood_requirement']) ? 'checked' : '' ?>>
                                 </label><br>
                                 <label class="label-with-toggle"><span>Include Listener</span>
-                                    <input type="hidden" name="metadata[include_listener_requirement]" value="0">
-                                    <input type="checkbox" name="metadata[include_listener_requirement]" value="1" <?= (!isset($metadata['include_listener_requirement']) || $metadata['include_listener_requirement']) ? 'checked' : '' ?>>
+                                    <input type="hidden" name="meta_vis[include_listener_requirement]" value="0">
+                                    <input type="checkbox" name="meta_vis[include_listener_requirement]" value="1" <?= (!isset($metadata['include_listener_requirement']) || $metadata['include_listener_requirement']) ? 'checked' : '' ?>>
                                 </label><br>
                                 <label class="label-with-toggle"><span>Include Actions</span>
-                                    <input type="hidden" name="metadata[include_actions_list]" value="0">
-                                    <input type="checkbox" name="metadata[include_actions_list]" value="1" <?= (!isset($metadata['include_actions_list']) || $metadata['include_actions_list']) ? 'checked' : '' ?>>
+                                    <input type="hidden" name="meta_vis[include_actions_list]" value="0">
+                                    <input type="checkbox" name="meta_vis[include_actions_list]" value="1" <?= (!isset($metadata['include_actions_list']) || $metadata['include_actions_list']) ? 'checked' : '' ?>>
                                 </label><br>
                                 <label class="label-with-toggle"><span>Include Target</span>
-                                    <input type="hidden" name="metadata[include_target_requirement]" value="0">
-                                    <input type="checkbox" name="metadata[include_target_requirement]" value="1" <?= (!isset($metadata['include_target_requirement']) || $metadata['include_target_requirement']) ? 'checked' : '' ?>>
+                                    <input type="hidden" name="meta_vis[include_target_requirement]" value="0">
+                                    <input type="checkbox" name="meta_vis[include_target_requirement]" value="1" <?= (!isset($metadata['include_target_requirement']) || $metadata['include_target_requirement']) ? 'checked' : '' ?>>
                                 </label>
                             </div>
                         </div>
@@ -478,20 +478,20 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                         <summary class="collapsible-header">Advanced Settings</summary>
                         <div class="collapsible-content">
                             <label for='max_dialogue_cache'><span class='tip-label' data-tip='Maximum dialogue history entries to keep in cache (30-2000). Higher values = more context but larger cache files. Recommended: 93-200.'>Max Dialogue Cache Size</span></label><br>
-                            <input type='number' name='metadata[max_dialogue_cache]' id='max_dialogue_cache' value='<?= htmlspecialchars($metadata['max_dialogue_cache'] ?? '93') ?>' min='30' max='2000' step='1'><br>
+                            <input type='number' name='meta_vis[max_dialogue_cache]' id='max_dialogue_cache' value='<?= htmlspecialchars($metadata['max_dialogue_cache'] ?? '93') ?>' min='30' max='2000' step='1'><br>
 
                             <label for='custom_system_instruction'><span class='tip-label' data-tip='Additional instructions prepended to the system prompt. Use for connector-specific customization.'>Custom System Instruction</span></label><br>
-                            <textarea name='metadata[custom_system_instruction]' id='custom_system_instruction' rows='3' style='width:100%; resize:vertical;'><?= htmlspecialchars($metadata['custom_system_instruction'] ?? '') ?></textarea><br>
+                            <textarea name='meta_vis[custom_system_instruction]' id='custom_system_instruction' rows='3' style='width:100%; resize:vertical;'><?= htmlspecialchars($metadata['custom_system_instruction'] ?? '') ?></textarea><br>
 
                             <label for='custom_last_instruction'><span class='tip-label' data-tip='Final instruction added at the end of the prompt. Use for last-minute guidance or reminders.'>Custom Last Instruction</span></label><br>
-                            <textarea name='metadata[custom_last_instruction]' id='custom_last_instruction' rows='3' style='width:100%; resize:vertical;'><?= htmlspecialchars($metadata['custom_last_instruction'] ?? '') ?></textarea><br>
+                            <textarea name='meta_vis[custom_last_instruction]' id='custom_last_instruction' rows='3' style='width:100%; resize:vertical;'><?= htmlspecialchars($metadata['custom_last_instruction'] ?? '') ?></textarea><br>
                         </div>
                     </details>
 
                     <div id="verbose_logging_option" style="display:none; margin-top:12px;">
                         <label class="label-with-toggle"><span class='tip-label' data-tip='Enable detailed logging for testing (verbose connector only)'>Verbose Logging</span>
-                            <input type="hidden" name="metadata[verbose_logging]" value="0">
-                            <input type="checkbox" name="metadata[verbose_logging]" value="1" <?= (!isset($metadata['verbose_logging']) || $metadata['verbose_logging']) ? 'checked' : '' ?>>
+                            <input type="hidden" name="meta_vis[verbose_logging]" value="0">
+                            <input type="checkbox" name="meta_vis[verbose_logging]" value="1" <?= (!isset($metadata['verbose_logging']) || $metadata['verbose_logging']) ? 'checked' : '' ?>>
                             <span class="toggle-text">On</span>
                         </label>
                     </div>

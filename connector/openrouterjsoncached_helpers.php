@@ -537,8 +537,12 @@ function extractSimpleFormatFromBuffer($buffer, $includeMood, $includeListener, 
         ];
     }
 
-    $groupPattern = str_repeat('\(([^)]+)\)', $groupCount);
-    $pattern = '/^\s*' . $groupPattern . '\s*(.*)$/s';
+    // BUG FIX (v1.0.20-22): Make opening parenthesis optional for prefill case
+    // When we prefill with '(' and LLM outputs 'mood)', we get '(mood)' which works
+    // But some LLMs output full '(mood)' making it '((mood)' which fails
+    // Also make colon optional as some LLMs add ': ' after format markers
+    $groupPattern = str_repeat('\(?([^)]+)\)', $groupCount);
+    $pattern = '/^\s*' . $groupPattern . '\s*:?\s*(.*)$/s';
 
     if (preg_match($pattern, $buffer, $matches)) {
         $groups = [];
