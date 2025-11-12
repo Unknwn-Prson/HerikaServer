@@ -1033,19 +1033,25 @@ class openrouterjsoncached
                     // Strip any reasoning tokens from final message before returning
                     return stripReasoningTokens($parsed['message']);
                 } else {
-                    // BUG FIX (v1.0.20): Simple format parsing failed - use fallback to prevent lost messages
-                    // This happens when LLM doesn't follow format instructions exactly
-                    logMessage("[{$this->name}] ERROR: Simple format parsing failed! LLM did not follow format instructions. Using raw buffer as fallback.");
-                    logMessage("[{$this->name}] Buffer content (first 200 chars): " . substr($this->_buffer, 0, 200));
+                    // BUG FIX (v1.1.4): Simple format parsing failed - use fallback to prevent lost messages
+                    // This happens when LLM doesn't follow format instructions exactly, OR when
+                    // first streaming chunk arrives with just format markers but no message text yet
+
+                    // Don't log error on first chunk - might just be incomplete
+                    if (strlen($this->_buffer) > 20) {
+                        logMessage("[{$this->name}] ERROR: Simple format parsing failed! LLM did not follow format instructions. Using raw buffer as fallback.");
+                        logMessage("[{$this->name}] Buffer content (first 200 chars): " . substr($this->_buffer, 0, 200));
+                    }
 
                     // Mark as parsed to prevent re-parsing
                     $this->_simpleFormatParsed = true;
                     $this->_simpleFormatMessageStart = 0;
-                    $this->_lastReturnedLength = strlen($this->_buffer);
 
-                    // Return the entire buffer as the message (strip prefill if used)
-                    $bufferToReturn = $this->_usedPrefill ? substr($this->_buffer, strlen($this->_prefillContent)) : $this->_buffer;
-                    return stripReasoningTokens($bufferToReturn);
+                    // CRITICAL FIX: Don't strip prefill from buffer - it was never included in $this->_buffer!
+                    // The prefill is only added to $bufferToParse for regex matching, but $this->_buffer
+                    // contains only what the API returned (e.g., "lovely) : pauses..."), NOT the prefill
+                    $this->_lastReturnedLength = strlen($this->_buffer);
+                    return stripReasoningTokens($this->_buffer);
                 }
             } else {
                 // Simple format already parsed, return only new content since last call
