@@ -9,7 +9,7 @@ require_once($enginePath . "lib" .DIRECTORY_SEPARATOR."tokenizer_helper_function
 class openrouterjsoncached
 {
     // ⚠️ IMPORTANT: Please update version number, date, and CHIM version after making changes
-    const VERSION = 'OpenRouter Cache Connector v1.0.19f for CHIM 2.0.3 | 2025/11/12 (FUNCTIONAL BASELINE)';
+    const VERSION = 'OpenRouter Cache Connector v1.1.0f for CHIM 2.0.3 | 2025/11/12';
 
     public $primary_handler;
     public $name;
