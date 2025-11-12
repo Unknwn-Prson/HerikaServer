@@ -1015,9 +1015,14 @@ class openrouterjsoncached
                     // CRITICAL FIX: Don't mark as parsed if message is empty (incomplete chunk)
                     // First streaming chunk might have format markers but no message yet
                     if (empty($parsed['message'])) {
+                        // DEBUG: Log when waiting for message content
+                        logMessage("[{$this->name}] Simple format: mood='{$parsed['mood']}', message EMPTY, waiting for more data. Buffer: " . substr($this->_buffer, 0, 50));
                         // Message not arrived yet, don't mark as parsed - try again next chunk
                         return "";
                     }
+
+                    // DEBUG: Log successful parse
+                    logMessage("[{$this->name}] Simple format: mood='{$parsed['mood']}', message length=" . strlen($parsed['message']) . ", preview: " . substr($parsed['message'], 0, 50));
 
                     $this->_simpleFormatParsed = true;
 
