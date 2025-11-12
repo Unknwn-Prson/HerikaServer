@@ -2,6 +2,44 @@
 CHIM CACHED CONNECTOR - VERSION HISTORY
 ===============================================================================
 
+Version 1.0.19f (2025-11-12) - FUNCTIONAL BASELINE
+---------------------------------------------------
+
+**THIS IS THE LAST KNOWN WORKING VERSION**
+
+This version represents the functional baseline from commit 8052949b.
+All features working correctly:
+✓ Simple format parsing with proper spacing
+✓ JSON format responses
+✓ Streaming functionality
+✓ Mood/action/listener/POV format markers
+✓ Cache functionality (Anthropic, OpenAI, Gemini)
+✓ 4-decimal precision for parameters
+
+This version DOES NOT include changes from v1.0.20-v1.0.24 which introduced regressions:
+• v1.0.20 (Bug #6): Broke mood processing
+• v1.0.22 (Bug #9): Caused total system failure
+• v1.0.23-v1.0.24: UI improvements but core still broken
+
+Use this version as the stable baseline for future development.
+
+Files included:
+---------------
+• connector/openrouterjsoncached.php (v1.0.19f)
+• connector/openrouterjsoncached_verbose.php (v1.0.19f)
+• connector/openrouterjsoncached_helpers.php
+• connector/__jpd.php
+• lib/core/llm_connector.class.php
+• lib/tokenizer_helper_functions.php
+• conf/conf_schema.json
+• functions/json_response.php
+• ui/core/core_profiles.php
+• ui/core/llm_connectors.php
+• ui/conf_wizard.php
+• ui/conf_wizardbackup.php
+
+===============================================================================
+
 Version 1.0.19 (2025-11-11)
 ---------------------------
 
