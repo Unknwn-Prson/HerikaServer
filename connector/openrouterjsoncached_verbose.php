@@ -1678,6 +1678,20 @@ class openrouterjsoncached_verbose
                 // VERBOSE_LOGGING_END
 
                 if ($parsed['found']) {
+                    // CRITICAL FIX: Don't mark as parsed if message is empty (incomplete chunk)
+                    // First streaming chunk might have format markers but no message yet
+                    if (empty($parsed['message'])) {
+                        // VERBOSE_LOGGING_START - _parseAndReturnContent: Empty message
+                        if ($this->_verboseLogging) {
+                            logMessage("[CACHE-VERBOSE] ⚠️ Format markers found but message empty - waiting for more data");
+                            logMessage("[CACHE-VERBOSE] Buffer: " . $this->_buffer);
+                        }
+                        // VERBOSE_LOGGING_END
+
+                        // Message not arrived yet, don't mark as parsed - try again next chunk
+                        return "";
+                    }
+
                     $this->_simpleFormatParsed = true;
 
                     // Calculate where the message starts in the buffer (after format markers)

@@ -1012,6 +1012,13 @@ class openrouterjsoncached
                 );
 
                 if ($parsed['found']) {
+                    // CRITICAL FIX: Don't mark as parsed if message is empty (incomplete chunk)
+                    // First streaming chunk might have format markers but no message yet
+                    if (empty($parsed['message'])) {
+                        // Message not arrived yet, don't mark as parsed - try again next chunk
+                        return "";
+                    }
+
                     $this->_simpleFormatParsed = true;
 
                     // Calculate where the message starts in the buffer (after format markers)
