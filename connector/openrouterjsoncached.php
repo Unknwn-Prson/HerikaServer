@@ -9,7 +9,7 @@ require_once($enginePath . "lib" .DIRECTORY_SEPARATOR."tokenizer_helper_function
 class openrouterjsoncached
 {
     // ⚠️ IMPORTANT: Please update version number, date, and CHIM version after making changes
-    const VERSION = 'OpenRouter Cache Connector v1.1.1 for CHIM 2.0.3 | 2025/11/12';
+    const VERSION = 'OpenRouter Cache Connector v1.1.2 for CHIM 2.0.3 | 2025/11/12';
 
     public $primary_handler;
     public $name;
@@ -499,6 +499,16 @@ class openrouterjsoncached
         logMessage("New elements added to cache: {$completeEventList['new_count']}");
         $completeEventList = $completeEventList['updated_list'];
 
+        // FIX: Remove duplicate memories BEFORE cache calculations to prevent index shifting
+        // This must happen before cache markers are placed, otherwise removing duplicates
+        // will shift indices and cache markers will end up on wrong messages
+        $beforeDedupCount = count($completeEventList);
+        $completeEventList = removeDuplicateMemories($completeEventList);
+        $afterDedupCount = count($completeEventList);
+        if ($beforeDedupCount !== $afterDedupCount) {
+            logMessage("Removed " . ($beforeDedupCount - $afterDedupCount) . " duplicate memories before cache calculation");
+        }
+
         // Add custom instructions if present
         $addToIndex = 0;
         if (!empty($lastCustomInstruction)) {
@@ -507,6 +517,15 @@ class openrouterjsoncached
         }
 
         $completeEventList[] = $instruction;
+
+        // Add dialogue template prompt (controlled by minimize_quality_prompt setting)
+        // This is the "Write HERIKA_NAME's next dialogue line" instruction
+        // Should be in uncached section as it may vary per turn
+        if (isset($GLOBALS["TEMPLATE_DIALOG"]) && !empty($GLOBALS["TEMPLATE_DIALOG"])) {
+            $addToIndex++;
+            $completeEventList[] = ['type' => 'text', 'text' => $GLOBALS["TEMPLATE_DIALOG"]];
+            logMessage("Added TEMPLATE_DIALOG to uncached section: " . substr($GLOBALS["TEMPLATE_DIALOG"], 0, 50) . "...");
+        }
 
         // Store default target for simple format
         $this->_defaultTarget = getLastUserMessageSpeaker($contextData);
@@ -582,7 +601,9 @@ class openrouterjsoncached
             array_splice($completeEventList, $insertPosition, 0, [array('type' => 'text', 'text' => $dynamicEnvironment)]);
         }
 
-        $completeEventList = removeDuplicateMemories($completeEventList);
+        // REMOVED: Duplicate memory removal now happens BEFORE cache calculations (line ~506)
+        // This prevents cache markers from shifting when duplicates are removed
+        // $completeEventList = removeDuplicateMemories($completeEventList);
 
         $tokenCount = countTokensByWords($completeEventList);
         logMessage("Estimated token count: $tokenCount");

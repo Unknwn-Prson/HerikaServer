@@ -10,7 +10,7 @@ require_once($enginePath . "lib" .DIRECTORY_SEPARATOR."tokenizer_helper_function
 class openrouterjsoncached_verbose
 {
     // ⚠️ IMPORTANT: Please update version number, date, and CHIM version after making changes
-    const VERSION = 'OpenRouter Cache Connector v1.1.1 for CHIM 2.0.3 | 2025/11/12 (VERBOSE)';
+    const VERSION = 'OpenRouter Cache Connector v1.1.2 for CHIM 2.0.3 | 2025/11/12 (VERBOSE)';
 
     public $primary_handler;
     public $name;
@@ -656,6 +656,24 @@ class openrouterjsoncached_verbose
 
         $completeEventList = $completeEventList['updated_list'];
 
+        // FIX: Remove duplicate memories BEFORE cache calculations to prevent index shifting
+        // This must happen before cache markers are placed, otherwise removing duplicates
+        // will shift indices and cache markers will end up on wrong messages
+        $beforeDedupCount = count($completeEventList);
+        $completeEventList = removeDuplicateMemories($completeEventList);
+        $afterDedupCount = count($completeEventList);
+        if ($beforeDedupCount !== $afterDedupCount) {
+            logMessage("Removed " . ($beforeDedupCount - $afterDedupCount) . " duplicate memories before cache calculation");
+        }
+
+        // VERBOSE_LOGGING_START - _openPart3: Duplicate memory removal
+        if ($this->_verboseLogging) {
+            $removedCount = $beforeDedupCount - $afterDedupCount;
+            logMessage("[CACHE-VERBOSE] Duplicate memory removal: {$removedCount} duplicates removed");
+            logMessage("[CACHE-VERBOSE] List size after deduplication: {$afterDedupCount}");
+        }
+        // VERBOSE_LOGGING_END
+
         // Add custom instructions if present
         $addToIndex = 0;
         if (!empty($lastCustomInstruction)) {
@@ -678,6 +696,23 @@ class openrouterjsoncached_verbose
             logMessage("[CACHE-VERBOSE] Complete event list size after all additions: " . count($completeEventList));
         }
         // VERBOSE_LOGGING_END
+
+        // Add dialogue template prompt (controlled by minimize_quality_prompt setting)
+        // This is the "Write HERIKA_NAME's next dialogue line" instruction
+        // Should be in uncached section as it may vary per turn
+        if (isset($GLOBALS["TEMPLATE_DIALOG"]) && !empty($GLOBALS["TEMPLATE_DIALOG"])) {
+            $addToIndex++;
+            $completeEventList[] = ['type' => 'text', 'text' => $GLOBALS["TEMPLATE_DIALOG"]];
+            logMessage("Added TEMPLATE_DIALOG to uncached section: " . substr($GLOBALS["TEMPLATE_DIALOG"], 0, 50) . "...");
+
+            // VERBOSE_LOGGING_START - _openPart3: TEMPLATE_DIALOG added
+            if ($this->_verboseLogging) {
+                logMessage("[CACHE-VERBOSE] TEMPLATE_DIALOG added (length: " . strlen($GLOBALS["TEMPLATE_DIALOG"]) . " chars)");
+                logMessage("[CACHE-VERBOSE] TEMPLATE_DIALOG content: " . $GLOBALS["TEMPLATE_DIALOG"]);
+                logMessage("[CACHE-VERBOSE] addToIndex incremented to: {$addToIndex}");
+            }
+            // VERBOSE_LOGGING_END
+        }
 
         // Store default target for simple format
         $this->_defaultTarget = getLastUserMessageSpeaker($contextData);
@@ -861,11 +896,13 @@ class openrouterjsoncached_verbose
             // VERBOSE_LOGGING_END
         }
 
-        $completeEventList = removeDuplicateMemories($completeEventList);
+        // REMOVED: Duplicate memory removal now happens BEFORE cache calculations (line ~663)
+        // This prevents cache markers from shifting when duplicates are removed
+        // $completeEventList = removeDuplicateMemories($completeEventList);
 
-        // VERBOSE_LOGGING_START - _openPart3: Duplicate removal
+        // VERBOSE_LOGGING_START - _openPart3: Final list size
         if ($this->_verboseLogging) {
-            logMessage("[CACHE-VERBOSE] Duplicate memories removed, final list size: " . count($completeEventList));
+            logMessage("[CACHE-VERBOSE] Final list size before token counting: " . count($completeEventList));
         }
         // VERBOSE_LOGGING_END
 
