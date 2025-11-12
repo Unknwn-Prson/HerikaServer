@@ -1,0 +1,264 @@
+# CHIM Cached Connector v1.1.6 - Installation Instructions
+
+**Version**: 1.1.6
+**Release Date**: 2025-11-12
+**Compatibility**: CHIM 2.0.3+
+**Based On**: v1.0.19f functional baseline
+
+---
+
+## What's New in v1.1.6
+
+### CRITICAL Streaming Fix
+- **Fixed Simple Format Only Showing Format Marker** - Full messages now appear (v1.1.5 bug)
+- Empty message chunks no longer mark parsing as complete prematurely
+
+### Previous Fixes (v1.1.4-v1.1.5)
+- Fixed Profile section settings not saving
+- Fixed Simple format not working at all
+- Fixed first character being stripped in fallback
+- Added fallback handling for format parsing failures
+
+### Features from v1.1.0-v1.1.3
+- Collapsible UI sections
+- Gemini cache bounds checking
+- Response format controls (JSON/Simple with toggles)
+- Extended max dialogue cache limit (30-2000)
+- Duplicate memory timing fix
+- TEMPLATE_DIALOG restoration
+
+---
+
+## Installation Steps
+
+### 1. Backup Current Files (IMPORTANT!)
+
+Backup these files before installing:
+```
+connector/openrouterjson*.php
+ui/core/llm_connectors.php
+ui/core/core_profiles.php
+conf/conf_schema.json
+```
+
+### 2. Extract Files
+
+Extract all files from the zip, maintaining the directory structure:
+```
+HerikaServer/
+├── connector/
+│   ├── openrouterjsoncached.php (v1.1.6)
+│   ├── openrouterjsoncached_helpers.php
+│   └── openrouterjsoncached_verbose.php (v1.1.6)
+├── ui/core/
+│   ├── llm_connectors.php
+│   └── core_profiles.php
+├── conf/conf_schema.json
+├── lib/
+│   ├── core/llm_connector.class.php
+│   ├── chat_helper_functions.php
+│   ├── data_functions.php
+│   └── tokenizer_helper_functions.php
+├── functions/json_response.php
+├── ui/events-memories.php
+└── prompts/dialogue_prompt.php
+```
+
+### 3. Verify Installation
+
+Check that version is correct:
+- Look in connector file header for: `v1.1.6 for CHIM 2.0.3 | 2025/11/12`
+
+### 4. Configure Connector
+
+In CHIM WebUI:
+1. Go to **Profiles** or **LLM Connectors**
+2. Select or create connector with driver: `openrouterjsoncached`
+3. Configure settings:
+   - **Provider Caching**: Anthropic, OpenAI, or Gemini
+   - **Response Format**: JSON or Simple (both fully work now!)
+   - **Uncached Count**: 4 (recommended)
+   - **Minimize Quality Instructions**: Enabled for advanced models
+
+### 5. Test Configuration
+
+Run a conversation and verify:
+- Full messages appear (not just format markers)
+- Profile section settings save correctly
+- Simple format works completely
+- Streaming is smooth
+
+---
+
+## What Was Fixed
+
+### v1.1.6 (This Version)
+**Simple Format Streaming Bug**
+- Messages like "lovely) : pauses..." only showed "lovely"
+- Empty message chunks were marking parsing as complete too early
+- Now fixed: waits for actual message content before marking parsed
+
+### v1.1.5
+**Simple Format First Character Bug**
+- Messages were missing first character ("ovely" instead of "lovely)")
+- Fallback code incorrectly stripped from buffer
+- Now fixed: buffer returned as-is
+
+### v1.1.4
+**Profile Section Settings Not Saving**
+- All connector settings in Profiles editor now save correctly
+
+**Simple Format Not Working**
+- Simple format responses now appear in-game and context
+- Handles format variations with fallback
+
+### v1.1.3
+**Max Dialogue Cache Validation**
+- Can now set values up to 2000 (was limited to 200)
+
+### v1.1.2
+**Duplicate Memory Timing**
+- Cache markers now stay stable on correct messages
+
+**Missing TEMPLATE_DIALOG**
+- Dialogue instruction now properly inserted
+
+---
+
+## Configuration Options
+
+### Caching Settings
+- **Provider Caching Type**: Anthropic, OpenAI, or Gemini
+- **Uncached Dialogue Count**: Recent messages kept uncached (default: 4)
+- **Minimize Quality Instructions**: Short vs verbose dialogue instruction
+
+### Response Format (Collapsible)
+- **Response Format**: JSON (structured) or Simple (natural with markers)
+- **Include Mood**: Toggle mood requirement
+- **Include Listener**: Toggle listener specification
+- **Include Actions**: Toggle action selection
+- **Include Target**: Toggle action target
+
+### Advanced Settings (Collapsible)
+- **Max Dialogue Cache**: Maximum cached messages (default: 93, max: 2000)
+- **Custom System Instruction**: Additional system prompt
+- **Custom Last Instruction**: Instruction added near end
+
+---
+
+## Troubleshooting
+
+### Issue: Only format marker appears (e.g., "lovely" instead of full message)
+**Solution**: Upgrade to v1.1.6 (fixed)
+
+### Issue: First character missing from messages
+**Solution**: Upgrade to v1.1.5+ (fixed)
+
+### Issue: Profile section settings not saving
+**Solution**: Upgrade to v1.1.4+ (fixed)
+
+### Issue: Simple format responses not appearing at all
+**Solution**: Upgrade to v1.1.4+ (fixed)
+
+---
+
+## Files Included
+
+### Core Connector Files
+- `connector/openrouterjsoncached.php` - Main connector (v1.1.6)
+- `connector/openrouterjsoncached_helpers.php` - Helper functions
+- `connector/openrouterjsoncached_verbose.php` - Verbose logging version (v1.1.6)
+
+### Integration Files (16 .php + 1 .json)
+- `ui/core/llm_connectors.php` - UI with fixed field naming
+- `ui/core/core_profiles.php` - Profiles UI
+- `conf/conf_schema.json` - Configuration schema
+- `lib/core/llm_connector.class.php` - Connector loader
+- `lib/chat_helper_functions.php` - Chat utilities
+- `lib/data_functions.php` - Data management
+- `lib/tokenizer_helper_functions.php` - Token counting
+- `functions/json_response.php` - JSON response handling
+- `ui/events-memories.php` - Events/memories UI
+- `ui/conf_wizard.php` - Configuration wizard
+- `ui/conf_wizardbackup.php` - Config backup
+- `ui/quickstart.php` - Quickstart guide
+- `prompts/dialogue_prompt.php` - Dialogue template system
+
+### Documentation
+- `INSTALLATION_INSTRUCTIONS_v1.1.6.txt` - This file
+- `CHANGELOG_v1.1.6.txt` - Complete version history
+- `V1.1.6_CHANGES.md` - Detailed v1.1.6 changes (streaming fix)
+- `V1.1.5_CHANGES.md` - v1.1.5 changes (fallback fix)
+- `V1.1.4_CHANGES.md` - v1.1.4 changes (Profile + Simple format fixes)
+- `V1.1.3_CHANGES.md` - v1.1.3 changes (max cache limit)
+- `V1.1.2_CHANGES.md` - v1.1.2 changes (critical cache fixes)
+- Additional analysis documents
+
+---
+
+## Upgrade Path
+
+### From v1.1.5
+- CRITICAL upgrade if using simple format
+- Fixes message content not appearing
+- Drop-in replacement
+
+### From v1.1.4 or earlier
+- All v1.1.5 and v1.1.6 improvements included
+- Multiple critical fixes
+- Highly recommended upgrade
+
+### From v1.0.19f
+- Direct upgrade supported
+- All v1.1.x improvements included
+
+### From v1.0.20-v1.0.24
+- **Highly recommended**
+- Those versions had bugs
+- Based on v1.0.19f stable + proper fixes only
+
+---
+
+## Testing Recommendations
+
+### Test 1: Simple Format Full Message
+1. Set response_format to "simple"
+2. Run conversation
+3. **Verify**: Full messages appear (not just "lovely")
+4. **Verify**: Format markers followed by message text
+5. **Verify**: Streaming works smoothly
+
+### Test 2: Profile Settings Saving
+1. Edit connector settings in Profiles section
+2. Save and refresh
+3. **Verify**: All changes persist
+
+### Test 3: JSON Format (Regression)
+1. Use JSON format
+2. **Verify**: Everything works normally
+
+---
+
+## Support & Feedback
+
+**Repository**: https://github.com/Unknwn-Prson/HerikaServer
+**Issues**: https://github.com/Unknwn-Prson/HerikaServer/issues
+
+---
+
+## Version History Summary
+
+- **v1.1.6** (2025-11-12): Fix simple format streaming - empty message marked as parsed
+- **v1.1.5** (2025-11-12): Fix simple format fallback first character bug
+- **v1.1.4** (2025-11-12): Fix Profile settings save + Simple format (CRITICAL)
+- **v1.1.3** (2025-11-12): Fix max dialogue cache size validation
+- **v1.1.2** (2025-11-12): Fix duplicate memory timing + TEMPLATE_DIALOG
+- **v1.1.1** (2025-11-12): Add collapsible UI + Gemini cache fix
+- **v1.1.0f** (2025-11-12): Clean baseline review
+- **v1.0.19f** (2025-11-12): Functional baseline
+
+---
+
+**Current Version**: 1.1.6
+**Recommended for**: All users, especially those using simple format
+**Status**: Stable, tested, production-ready
