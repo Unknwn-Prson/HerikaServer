@@ -477,8 +477,8 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                     <details class="collapsible" style="margin-top:12px;" id="advanced_settings_section">
                         <summary class="collapsible-header">Advanced Settings</summary>
                         <div class="collapsible-content">
-                            <label for='max_dialogue_cache'><span class='tip-label' data-tip='Maximum dialogue history entries to keep in cache (30-200). Higher values = more context but larger cache.'>Max Dialogue Cache Size</span></label><br>
-                            <input type='number' name='metadata[max_dialogue_cache]' id='max_dialogue_cache' value='<?= htmlspecialchars($metadata['max_dialogue_cache'] ?? '93') ?>' min='30' max='200' step='1'><br>
+                            <label for='max_dialogue_cache'><span class='tip-label' data-tip='Maximum dialogue history entries to keep in cache (30-2000). Higher values = more context but larger cache files. Recommended: 93-200.'>Max Dialogue Cache Size</span></label><br>
+                            <input type='number' name='metadata[max_dialogue_cache]' id='max_dialogue_cache' value='<?= htmlspecialchars($metadata['max_dialogue_cache'] ?? '93') ?>' min='30' max='2000' step='1'><br>
 
                             <label for='custom_system_instruction'><span class='tip-label' data-tip='Additional instructions prepended to the system prompt. Use for connector-specific customization.'>Custom System Instruction</span></label><br>
                             <textarea name='metadata[custom_system_instruction]' id='custom_system_instruction' rows='3' style='width:100%; resize:vertical;'><?= htmlspecialchars($metadata['custom_system_instruction'] ?? '') ?></textarea><br>
@@ -1515,8 +1515,8 @@ if (typeof window.consolidation !== 'function') {
                 <details class="collapsible" style="margin-top:12px;" id="advanced_settings_section_main">
                     <summary class="collapsible-header">Advanced Settings</summary>
                     <div class="collapsible-content">
-                        <label for='max_dialogue_cache_main'><span class='tip-label' data-tip='Maximum dialogue history entries to keep in cache (30-200). Higher values = more context but larger cache.'>Max Dialogue Cache Size</span></label><br>
-                        <input type='number' name='metadata[max_dialogue_cache]' id='max_dialogue_cache_main' value='<?= htmlspecialchars($metadata_main['max_dialogue_cache'] ?? '93') ?>' min='30' max='200' step='1'><br>
+                        <label for='max_dialogue_cache_main'><span class='tip-label' data-tip='Maximum dialogue history entries to keep in cache (30-2000). Higher values = more context but larger cache files. Recommended: 93-200.'>Max Dialogue Cache Size</span></label><br>
+                        <input type='number' name='metadata[max_dialogue_cache]' id='max_dialogue_cache_main' value='<?= htmlspecialchars($metadata_main['max_dialogue_cache'] ?? '93') ?>' min='30' max='2000' step='1'><br>
 
                         <label for='custom_system_instruction_main'><span class='tip-label' data-tip='Additional instructions prepended to the system prompt. Use for connector-specific customization.'>Custom System Instruction</span></label><br>
                         <textarea name='metadata[custom_system_instruction]' id='custom_system_instruction_main' rows='3' style='width:100%; resize:vertical;'><?= htmlspecialchars($metadata_main['custom_system_instruction'] ?? '') ?></textarea><br>
