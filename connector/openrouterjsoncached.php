@@ -9,7 +9,7 @@ require_once($enginePath . "lib" .DIRECTORY_SEPARATOR."tokenizer_helper_function
 class openrouterjsoncached
 {
     // ⚠️ IMPORTANT: Please update version number, date, and CHIM version after making changes
-    const VERSION = 'OpenRouter Cache Connector v1.1.0f for CHIM 2.0.3 | 2025/11/12';
+    const VERSION = 'OpenRouter Cache Connector v1.1.1 for CHIM 2.0.3 | 2025/11/12';
 
     public $primary_handler;
     public $name;
@@ -535,8 +535,18 @@ class openrouterjsoncached
                     $indexToCache = $elements - 1;
                 }
 
+                // FIX v1.1.1: Gemini cache index bounds check
+                // Gemini requires minimum 32 tokens (33 entries) for caching
+                // If calculated index is 0, we want to use index 33, BUT only if array is large enough
                 if ($indexToCache == 0) {
-                    $indexToCache = 33; // Gemini requires minimum 32 tokens for caching, use 33 to be safe
+                    if ($elements > 33) {
+                        $indexToCache = 33;
+                        logMessage("Gemini cache: Adjusted index from 0 to 33 (minimum required)");
+                    } else {
+                        // Not enough elements for Gemini's minimum cache requirement
+                        logMessage("Gemini cache: Skipping - insufficient elements ($elements < 34 required)");
+                        $indexToCache = -1; // Will be caught by isset() check below
+                    }
                 }
 
                 logMessage("Index to Cache: $indexToCache");

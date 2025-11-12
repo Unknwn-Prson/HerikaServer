@@ -10,7 +10,7 @@ require_once($enginePath . "lib" .DIRECTORY_SEPARATOR."tokenizer_helper_function
 class openrouterjsoncached_verbose
 {
     // ⚠️ IMPORTANT: Please update version number, date, and CHIM version after making changes
-    const VERSION = 'OpenRouter Cache Connector v1.1.0f for CHIM 2.0.3 | 2025/11/12 (VERBOSE)';
+    const VERSION = 'OpenRouter Cache Connector v1.1.1 for CHIM 2.0.3 | 2025/11/12 (VERBOSE)';
 
     public $primary_handler;
     public $name;
@@ -746,14 +746,30 @@ class openrouterjsoncached_verbose
                     // VERBOSE_LOGGING_END
                 }
 
+                // FIX v1.1.1: Gemini cache index bounds check
+                // Gemini requires minimum 32 tokens (33 entries) for caching
+                // If calculated index is 0, we want to use index 33, BUT only if array is large enough
                 if ($indexToCache == 0) {
-                    $indexToCache = 33; // Gemini requires minimum 32 tokens for caching, use 33 to be safe
+                    if ($elements > 33) {
+                        $indexToCache = 33;
+                        logMessage("Gemini cache: Adjusted index from 0 to 33 (minimum required)");
 
-                    // VERBOSE_LOGGING_START - _openPart3: Gemini minimum tokens
-                    if ($this->_verboseLogging) {
-                        logMessage("[CACHE-VERBOSE] Index was 0, adjusted to 33 (Gemini minimum 32 tokens requirement)");
+                        // VERBOSE_LOGGING_START - _openPart3: Gemini minimum tokens
+                        if ($this->_verboseLogging) {
+                            logMessage("[CACHE-VERBOSE] Index was 0, adjusted to 33 (Gemini minimum 32 tokens requirement)");
+                        }
+                        // VERBOSE_LOGGING_END
+                    } else {
+                        // Not enough elements for Gemini's minimum cache requirement
+                        logMessage("Gemini cache: Skipping - insufficient elements ($elements < 34 required)");
+                        $indexToCache = -1; // Will be caught by isset() check below
+
+                        // VERBOSE_LOGGING_START - _openPart3: Gemini insufficient elements
+                        if ($this->_verboseLogging) {
+                            logMessage("[CACHE-VERBOSE] Insufficient elements for Gemini cache (need 34+, have $elements)");
+                        }
+                        // VERBOSE_LOGGING_END
                     }
-                    // VERBOSE_LOGGING_END
                 }
 
                 logMessage("Index to Cache: $indexToCache");
