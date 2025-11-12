@@ -1,0 +1,236 @@
+# CHIM Cached Connector - Complete Changelog
+
+---
+
+## Version 1.1.5 (2025-11-12) - CRITICAL HOTFIX
+
+### Critical Bug Fix
+
+**Simple Format Fallback Stripping First Character (CRITICAL)**
+- **Problem**: Only first few characters appeared in-game ("ovely" instead of "lovely)")
+- **Root Cause**: Fallback code tried to strip prefill from buffer, but prefill was never in buffer
+- **Example Issue**:
+  - LLM outputs: `lovely) : pauses in her organization...`
+  - What appeared: `ovely`
+  - Bug: `substr('lovely)...', 1)` incorrectly stripped first `l`
+- **Fix**: Return `$this->_buffer` directly without stripping
+- **Files**: `openrouterjsoncached.php` lines 1036-1054, `openrouterjsoncached_verbose.php` lines 1721-1752
+- **Result**: Full messages now appear correctly
+
+### Technical Details
+
+**Buffer vs BufferToParse Explained**:
+- `$this->_buffer`: Raw API response (e.g., `lovely) : pauses...`)
+- `$bufferToParse`: Temporary with prefill for parsing (e.g., `(lovely) : pauses...`)
+- **Key**: Prefill ONLY added to $bufferToParse, NEVER in $this->_buffer
+- **v1.1.4 Bug**: Tried to strip prefill from buffer that never had it
+- **v1.1.5 Fix**: Return buffer as-is without stripping
+
+### Additional Improvements
+- Reduced error logging spam (don't log on first chunk < 20 chars)
+- Enhanced verbose logging showing prefill status
+- Better code comments explaining buffer handling
+
+### Files Modified
+- `connector/openrouterjsoncached.php` - v1.1.4 → v1.1.5
+- `connector/openrouterjsoncached_verbose.php` - v1.1.4 → v1.1.5
+
+---
+
+## Version 1.1.4 (2025-11-12) - CRITICAL FIXES
+
+### Critical Bug Fixes
+
+**Bug #1: Profile Section Settings Not Saving (CRITICAL)**
+- **Problem**: Connector settings in Profiles editor silently discarded
+- **Root Cause**: Used `metadata[...]` instead of `meta_vis[...]` field naming
+- **Fix**: Renamed 13 fields in Profiles section
+- **Files**: `ui/core/llm_connectors.php` lines 429-494
+- **Result**: Profile section settings now save correctly
+
+**Bug #2: Simple Format Not Working (CRITICAL)**
+- **Problem**: Simple format responses received but never appeared in-game
+- **Root Causes**:
+  1. No fallback when parsing failed → empty string returned
+  2. Regex required both parentheses → prefill case failed
+  3. Regex didn't handle optional colons → some LLM outputs failed
+- **Fixes** (from v1.0.20-22 Bug #6 & #8):
+  1. Added fallback handling
+  2. Made opening parenthesis optional: `\(?`
+  3. Made colon optional: `:?\s*`
+- **Files**: Main + verbose connectors, helpers
+- **Result**: Simple format works with variations and fallback
+- **Note**: v1.1.4 introduced substr() bug, fixed in v1.1.5
+
+### Files Modified
+- `ui/core/llm_connectors.php` - Fixed Profiles section field naming
+- `connector/openrouterjsoncached.php` - v1.1.3 → v1.1.4, added fallback
+- `connector/openrouterjsoncached_verbose.php` - v1.1.3 → v1.1.4, added fallback
+- `connector/openrouterjsoncached_helpers.php` - Fixed regex pattern
+
+---
+
+## Version 1.1.3 (2025-11-12) - UI Fix
+
+### Bug Fixes
+
+**Max Dialogue Cache Size Validation Limit**
+- **Problem**: Values 500+ couldn't be saved (HTML5 validation)
+- **Root Cause**: HTML input had `max='200'` attribute
+- **Fix**: Changed to `max='2000'` in both UI locations
+- **Files**: `ui/core/llm_connectors.php` lines 481, 1519
+- **Result**: Users can set values 30-2000
+
+### UI Improvements
+- Updated tooltips: "(30-2000). Recommended: 93-200."
+
+---
+
+## Version 1.1.2 (2025-11-12) - CRITICAL FIXES
+
+### Critical Bug Fixes
+
+**Issue #2: Duplicate Memory Removal Timing (CRITICAL)**
+- **Problem**: Duplicates removed AFTER cache markers placed → indices shifted
+- **Fix**: Moved to run BEFORE cache calculations
+- **Files**: Main + verbose connectors line ~506, ~663
+- **Result**: Cache markers stay stable
+
+**Missing TEMPLATE_DIALOG Prompt (HIGH PRIORITY)**
+- **Problem**: Dialogue instruction completely missing
+- **Fix**: Added TEMPLATE_DIALOG insertion in uncached section
+- **Files**: Main + verbose connectors line ~524, ~703
+- **Result**: LLM receives proper roleplay instruction
+
+### Files Modified
+- `connector/openrouterjsoncached.php` - v1.1.1 → v1.1.2
+- `connector/openrouterjsoncached_verbose.php` - v1.1.1 → v1.1.2
+
+---
+
+## Version 1.1.1 (2025-11-12) - UI & Gemini Fixes
+
+### UI Enhancements
+
+**Collapsible Sections**
+- Response format (open by default)
+- Advanced settings (closed by default)
+- Better organization
+
+### Bug Fixes
+
+**Gemini Cache Index Bounds Check**
+- **Problem**: Set to 33 without checking array size
+- **Fix**: Added bounds check
+- **Result**: No more silent cache failures
+
+### Files Modified
+- `connector/openrouterjsoncached.php` - v1.1.0f → v1.1.1
+- `connector/openrouterjsoncached_verbose.php` - v1.1.0f → v1.1.1
+- `ui/core/llm_connectors.php` - Added collapsible sections
+
+---
+
+## Version 1.1.0f (2025-11-12) - Clean Baseline Review
+
+### Analysis Phase
+- Comprehensive review of v1.0.19f
+- No code changes
+- Identified issues fixed in v1.1.1+
+
+---
+
+## Version 1.0.19f (2025-11-12) - Functional Baseline
+
+### Purpose
+- Clean baseline from commit 8052949b
+- Proven stable and functional
+- Foundation for all v1.1.x releases
+
+---
+
+## Versions 1.0.20-1.0.24 (NOT RECOMMENDED)
+
+**Status**: DEPRECATED - introduced more problems than solved
+
+---
+
+## Migration Guide
+
+### To v1.1.5 from v1.1.4
+- CRITICAL if using simple format
+- Fixes first character being stripped
+- Drop-in replacement
+
+### To v1.1.5 from v1.1.3 or earlier
+- All v1.1.4 and v1.1.5 improvements included
+- Multiple critical fixes
+- Highly recommended
+
+---
+
+## Feature Summary
+
+### Caching Support
+- Anthropic, OpenAI, Gemini providers
+- Configurable uncached count
+- Up to 2000 cached messages
+
+### Response Formats
+- JSON (structured)
+- Simple (natural language with markers)
+- Both fully functional as of v1.1.5
+
+### Configuration
+- Collapsible UI sections
+- Profile and Main LLM Connectors editors
+- All settings now save correctly
+
+---
+
+## Testing Recommendations
+
+### After v1.1.5 Upgrade
+
+**Test 1: Simple Format Full Message**
+- LLM output should appear in full
+- No missing first character
+- Format markers present
+
+**Test 2: Profile Settings**
+- Settings save correctly from Profiles page
+- Changes persist after refresh
+
+**Test 3: JSON Format**
+- Still works as expected
+- No regressions
+
+---
+
+## Known Issues
+
+### Fixed in v1.1.5
+✓ First character stripped in simple format
+✓ Profile settings not saving (v1.1.4)
+✓ Simple format not working (v1.1.4)
+✓ Max cache validation limit (v1.1.3)
+✓ Duplicate memory timing (v1.1.2)
+✓ Missing TEMPLATE_DIALOG (v1.1.2)
+
+### Current Limitations
+- Simple format fallback doesn't extract mood/action (preserves message)
+- Format markers might be visible in fallback mode
+
+---
+
+## Support
+
+**Repository**: https://github.com/Unknwn-Prson/HerikaServer
+**Issues**: https://github.com/Unknwn-Prson/HerikaServer/issues
+
+---
+
+**Current Version**: 1.1.5
+**Recommended for**: All users
+**Status**: Stable, tested, production-ready
+**Severity**: CRITICAL hotfix for v1.1.4 simple format bug
