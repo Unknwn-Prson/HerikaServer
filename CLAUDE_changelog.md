@@ -228,3 +228,47 @@ if ($this->_responseFormat === 'simple' && !$toggleThinking) {
 - Documentation comprehensive and user-friendly
 - Ready for production deployment
 
+### Entry 8: Move simple format instructions to user prompt & remove "naturally"
+**Timestamp:** 2025-11-15 16:30 UTC
+**Files Modified:**
+- `connector/openrouterjsoncached_helpers.php` (lines 484, 497)
+- `connector/openrouterjsoncached.php` (lines 430-438, 483-493, 540-549)
+
+**Problem Identified:**
+When thinking is enabled with simple format, LLM was not following the format instructions. Instructions were in system message but the reasoning model needs them closer to the actual task (user prompt).
+
+**Changes Made:**
+
+1. **Removed "naturally" from format instructions** (helpers.php)
+   - Line 484: `"Respond with your dialogue."` (was: "Respond naturally with your dialogue.")
+   - Line 497: `"then provide your dialogue. "` (was: "then provide your dialogue naturally. ")
+
+2. **Moved format instructions to user prompt for simple format** (connector.php)
+   - Lines 434-438: Format instruction NO LONGER added to system message for simple format
+   - Only added to system for JSON format (stays in $actionsText)
+   - Line 486: Pass $formatInstruction to _openPart3 function
+   - Line 493: Added $formatInstruction parameter to function signature
+   - Lines 540-549: Append format instruction to user instruction (after "Write {HERIKA_NAME}'s next dialogue line")
+
+**Logic Flow:**
+```
+OLD (broken with thinking):
+System: [character bio] Use ONLY this format: (mood)(listener)...
+User: Write Lydia's next dialogue line.
+```
+
+```
+NEW (works with thinking):
+System: [character bio] [actions list if available]
+User: Write Lydia's next dialogue line. Begin your response by noting your emotional state, who you're speaking to...
+```
+
+**Conceptual Goal:** Make LLM follow format instructions even when reasoning/thinking is enabled
+
+**Critical Analysis:**
+- Format instructions are now adjacent to the actual task
+- Reasoning models see format requirements right before generating response
+- JSON format unchanged (instructions stay in system message where they work fine)
+- Simple format now works correctly with thinking enabled
+- Instruction is part of the final user message, not buried in system prompt
+

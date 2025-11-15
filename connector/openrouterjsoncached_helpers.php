@@ -481,7 +481,7 @@ function buildSimpleFormatInstruction($includeMood, $includeListener, $includeAc
     if ($includeTarget) $parts[] = 'target';
 
     if (empty($parts)) {
-        return $customInstruction . " Respond naturally with your dialogue.";
+        return $customInstruction . " Respond with your dialogue.";
     }
 
     $formatExample = '(' . implode(')(', $parts) . ')';
@@ -494,7 +494,7 @@ function buildSimpleFormatInstruction($includeMood, $includeListener, $includeAc
     if ($includeTarget) $descriptions[] = "action target";
 
     $instruction .= implode(", ", $descriptions);
-    $instruction .= " in parentheses like this: {$formatExample}, then provide your dialogue naturally. ";
+    $instruction .= " in parentheses like this: {$formatExample}, then provide your dialogue. ";
 
     if ($includeMood && isset($GLOBALS["EMOTEMOODS"]) && !empty($GLOBALS["EMOTEMOODS"])) {
         $instruction .= "Valid moods: " . $GLOBALS["EMOTEMOODS"] . ". ";

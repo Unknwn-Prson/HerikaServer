@@ -431,7 +431,11 @@ class openrouterjsoncached
         if (!empty($availableActions)) {
             $actionsText .= "\n" . $availableActions . "\n";
         }
-        $actionsText .= $formatInstruction;
+        // For simple format, format instruction goes with user prompt, not system
+        // For JSON format, it stays in system message
+        if ($this->_responseFormat === 'json') {
+            $actionsText .= $formatInstruction;
+        }
 
         $dynamicEnvironment = "";
         $systemEntries = [];
@@ -479,14 +483,14 @@ class openrouterjsoncached
         return $this->_openPart3($contextData, $customParms, $herikaName, $MAX_TOKENS, $max_dialogue_cache_size,
                                   $lastCustomInstruction, $toggleThinking, $thinkingTokens, $effort_level,
                                   $CONTEXTHISTORY, $dialogue_cache_uncached_count, $start_time,
-                                  $finalMessagesToSend, $cacheCombinedDialogueFile, $cacheControlType, $dynamicEnvironment);
+                                  $finalMessagesToSend, $cacheCombinedDialogueFile, $cacheControlType, $dynamicEnvironment, $formatInstruction);
     }
 
     // Part 3: Dialogue History Caching and Cache Control Placement
     private function _openPart3($contextData, $customParms, $herikaName, $MAX_TOKENS, $max_dialogue_cache_size,
                                  $lastCustomInstruction, $toggleThinking, $thinkingTokens, $effort_level,
                                  $CONTEXTHISTORY, $dialogue_cache_uncached_count, $start_time,
-                                 $finalMessagesToSend, $cacheCombinedDialogueFile, $cacheControlType, $dynamicEnvironment) {
+                                 $finalMessagesToSend, $cacheCombinedDialogueFile, $cacheControlType, $dynamicEnvironment, $formatInstruction) {
 
         // Process dialogue history
         $contentTextToSend = [];
@@ -531,6 +535,15 @@ class openrouterjsoncached
         if (!empty($lastCustomInstruction)) {
             $addToIndex = 1;
             $completeEventList[] = ['type' => 'text', 'text' => $lastCustomInstruction];
+        }
+
+        // For simple format, append format instruction to the user instruction
+        // For JSON format, instruction is already in system message
+        if ($this->_responseFormat === 'simple' && !empty($formatInstruction)) {
+            // Append format instruction to the instruction text
+            $instructionText = is_array($instruction) && isset($instruction['text']) ? $instruction['text'] : $instruction;
+            $instructionText .= ' ' . $formatInstruction;
+            $instruction = is_array($instruction) ? ['type' => 'text', 'text' => $instructionText] : $instructionText;
         }
 
         $completeEventList[] = $instruction;
