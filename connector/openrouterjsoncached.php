@@ -606,7 +606,8 @@ class openrouterjsoncached
 
         // NOW add to finalMessagesToSend after all modifications are complete
         // BUG#3 FIX: Enable prefill for all caching providers, not just Anthropic
-        if ($this->_responseFormat === 'simple') {
+        // CRITICAL: Prefill is incompatible with reasoning - only use prefill when thinking is disabled
+        if ($this->_responseFormat === 'simple' && !$toggleThinking) {
             $finalMessagesToSend[] = array('role' => 'user', 'content' => $completeEventList);
             $prefillText = '(';
             $finalMessagesToSend[] = array('role' => 'assistant', 'content' => array(

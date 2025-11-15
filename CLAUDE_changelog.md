@@ -132,3 +132,40 @@
 
 **Note:** Verbose connector (openrouterjsoncached_verbose.php) intentionally NOT updated per user request
 
+### Entry 6: Fix thinking toggle not working with simple format
+**Timestamp:** 2025-11-15 15:40 UTC
+**File Modified:** `connector/openrouterjsoncached.php`
+**Section:** Line 610 (_openPart3 function - simple format prefill logic)
+**Action:** Added condition to prevent prefill when thinking is enabled
+
+**Problem Identified:**
+Simple format was ALWAYS adding assistant prefill `'('` to control response format, even when thinking toggle was enabled. Prefill and reasoning are **mutually incompatible** on most providers (Anthropic, OpenRouter). The prefill was blocking reasoning from being performed, even though `reasoning: {enabled: true}` was in the API payload.
+
+**User Evidence:**
+- JSON format (no prefill): Reasoning performed successfully (verified on OpenRouter)
+- Simple format (with prefill): Reasoning NOT performed despite enabled=true (verified on OpenRouter)
+- Both had identical reasoning parameters except for the prefill message
+
+**Fix Applied:**
+Changed line 610 from:
+```php
+if ($this->_responseFormat === 'simple') {
+```
+To:
+```php
+if ($this->_responseFormat === 'simple' && !$toggleThinking) {
+```
+
+**Logic:**
+- If simple format + thinking DISABLED: Use prefill for format control
+- If simple format + thinking ENABLED: Skip prefill, allow reasoning to work
+- If JSON format: No prefill (unchanged)
+
+**Conceptual Goal:** Enable thinking toggle to work correctly with simple format by avoiding incompatible prefill
+
+**Critical Analysis:**
+- Prefill is only needed for format control when model isn't doing reasoning
+- When thinking is enabled, the model is smart enough to follow format without prefill
+- This maintains backward compatibility: simple format without thinking still gets prefill
+- Thinking now works with BOTH JSON and simple formats
+
