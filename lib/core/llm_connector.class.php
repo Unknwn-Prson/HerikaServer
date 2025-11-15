@@ -58,12 +58,24 @@ class LLMConnector {
 
         // JSON encode metadata if it's an array
         if (isset($data['metadata']) && is_array($data['metadata'])) {
+            error_log("DEBUG llm_connector.update: metadata is array, encoding to JSON");
+            error_log("DEBUG metadata array: " . print_r($data['metadata'], true));
             $data['metadata'] = json_encode($data['metadata']);
+            error_log("DEBUG metadata JSON: " . $data['metadata']);
+        } else if (isset($data['metadata'])) {
+            error_log("DEBUG llm_connector.update: metadata is NOT array, type=" . gettype($data['metadata']));
+            error_log("DEBUG metadata value: " . $data['metadata']);
+        } else {
+            error_log("DEBUG llm_connector.update: metadata NOT SET in data");
         }
 
         $id = intval($id);
         $where = "id = {$id}";
         $filtered = array_intersect_key($data, array_flip($fields));
+        error_log("DEBUG filtered data keys: " . implode(', ', array_keys($filtered)));
+        if (isset($filtered['metadata'])) {
+            error_log("DEBUG filtered metadata: " . substr($filtered['metadata'], 0, 200));
+        }
         return $GLOBALS["db"]->updateRow($this->table, $filtered, $where);
     }
 

@@ -1154,6 +1154,15 @@ if (isset($_GET["create_blank"])) {
 // Handle Save (update without leaving current connector)
 if ($_SERVER["REQUEST_METHOD"] === "POST" && (isset($_POST["save"]) || isset($_POST["update"])) ) {
     $id = $_POST["id"] ?? '';
+    // DEBUG: Log what metadata we're receiving
+    error_log("=== LLM Connector Save Debug ===");
+    error_log("POST metadata type: " . gettype($_POST['metadata'] ?? null));
+    error_log("POST metadata value: " . print_r($_POST['metadata'] ?? 'NOT SET', true));
+    if (isset($_POST['metadata']) && is_array($_POST['metadata'])) {
+        error_log("toggle_thinking in array: " . (isset($_POST['metadata']['toggle_thinking']) ? $_POST['metadata']['toggle_thinking'] : 'NOT SET'));
+        error_log("thinking_tokens in array: " . (isset($_POST['metadata']['thinking_tokens']) ? $_POST['metadata']['thinking_tokens'] : 'NOT SET'));
+        error_log("effort_level in array: " . (isset($_POST['metadata']['effort_level']) ? $_POST['metadata']['effort_level'] : 'NOT SET'));
+    }
     $llm->update($id, $_POST);
     $redir = 'llm_connectors.php' . ($id !== '' ? ('?edit=' . urlencode($id)) : '');
     if (isset($_POST['partial']) && $_POST['partial'] === 'editor') {
