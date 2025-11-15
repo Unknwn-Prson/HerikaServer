@@ -459,6 +459,21 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                             <span class="toggle-text">On</span>
                         </label>
                     </div>
+
+                    <div style="margin-top:12px;">
+                        <label for='max_dialogue_cache_context_size'><span class='tip-label' data-tip='Maximum number of dialogue entries to cache in temp files. Higher = more context but larger cache files. Recommended: 93'>Max Dialogue Cache Context Size</span></label><br>
+                        <input type='number' name='metadata[max_dialogue_cache_context_size]' id='max_dialogue_cache_context_size' value='<?= htmlspecialchars($metadata['max_dialogue_cache_context_size'] ?? '93') ?>' min='0' step='1'>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label for='custom_system_instruction'><span class='tip-label' data-tip='Additional instruction added to the system prompt (after character bio, before dialogue history). Does NOT replace other instructions.'>Custom System Instruction</span></label><br>
+                        <textarea name='metadata[custom_system_instruction]' id='custom_system_instruction' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata['custom_system_instruction'] ?? '') ?></textarea>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label for='custom_last_instruction'><span class='tip-label' data-tip='Custom text inserted as second-to-last element in dialogue history (current user message is always last). Appears right before user current request.'>Custom Last Instruction</span></label><br>
+                        <textarea name='metadata[custom_last_instruction]' id='custom_last_instruction' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata['custom_last_instruction'] ?? '') ?></textarea>
+                    </div>
                 </div>
             </div>
             <div>
@@ -1467,6 +1482,29 @@ $effortLevel = $metadataArr["effort_level"] ?? '';
                         <input type="checkbox" name="metadata[verbose_logging]" value="1" <?= (!isset($metadata_main['verbose_logging']) || $metadata_main['verbose_logging']) ? 'checked' : '' ?>>
                         <span class="toggle-text">On</span>
                     </label>
+                </div>
+
+                <div style="margin-top:12px;">
+                    <label class="label-with-toggle"><span class='tip-label' data-tip='Recommended ON for advanced models (Claude 4.5, GPT-4, Gemini 2.0). Uses minimal quality instructions. Turn OFF for older/smaller models that benefit from explicit guidance.'>Minimize Quality Instructions (Recommended)</span>
+                        <input type="hidden" name="metadata[minimize_quality_prompt]" value="0">
+                        <input type="checkbox" name="metadata[minimize_quality_prompt]" value="1" <?= (!isset($metadata_main['minimize_quality_prompt']) || $metadata_main['minimize_quality_prompt']) ? 'checked' : '' ?>>
+                        <span class="toggle-text">On</span>
+                    </label>
+                </div>
+
+                <div style="margin-top:12px;">
+                    <label for='max_dialogue_cache_context_size_main'><span class='tip-label' data-tip='Maximum number of dialogue entries to cache in temp files. Higher = more context but larger cache files. Recommended: 93'>Max Dialogue Cache Context Size</span></label><br>
+                    <input type='number' name='metadata[max_dialogue_cache_context_size]' id='max_dialogue_cache_context_size_main' value='<?= htmlspecialchars($metadata_main['max_dialogue_cache_context_size'] ?? '93') ?>' min='0' step='1'>
+                </div>
+
+                <div style="margin-top:12px;">
+                    <label for='custom_system_instruction_main'><span class='tip-label' data-tip='Additional instruction added to the system prompt (after character bio, before dialogue history). Does NOT replace other instructions.'>Custom System Instruction</span></label><br>
+                    <textarea name='metadata[custom_system_instruction]' id='custom_system_instruction_main' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata_main['custom_system_instruction'] ?? '') ?></textarea>
+                </div>
+
+                <div style="margin-top:12px;">
+                    <label for='custom_last_instruction_main'><span class='tip-label' data-tip='Custom text inserted as second-to-last element in dialogue history (current user message is always last). Appears right before user current request.'>Custom Last Instruction</span></label><br>
+                    <textarea name='metadata[custom_last_instruction]' id='custom_last_instruction_main' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata_main['custom_last_instruction'] ?? '') ?></textarea>
                 </div>
             </div>
         </div>
