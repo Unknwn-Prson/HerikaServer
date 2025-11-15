@@ -1,0 +1,216 @@
+CHIM Cached Connector v1.2.1 - Installation Instructions
+========================================================
+
+IMPORTANT: READ BEFORE INSTALLING
+----------------------------------
+This connector provides advanced caching and thinking/reasoning support for
+CHIM 2.0.3. It includes working simple format and thinking toggle features.
+
+REQUIREMENTS
+------------
+- CHIM 2.0.3 or compatible version
+- PHP 7.4 or higher
+- OpenRouter, Anthropic, OpenAI, or Gemini API access
+- Write permissions to CHIM installation directory
+
+INSTALLATION STEPS
+------------------
+
+1. BACKUP YOUR CURRENT INSTALLATION
+   Before installing, backup these directories:
+   - connector/
+   - lib/core/
+   - lib/ (helper files)
+   - ui/core/
+   - conf/
+   - prompts/
+
+2. EXTRACT FILES
+   Extract the following files from this package to your CHIM installation:
+
+   connector/openrouterjsoncached.php
+   connector/openrouterjsoncached_helpers.php
+   connector/openrouterjsoncached_verbose.php (optional, not updated)
+   connector/OPENROUTERJSONCACHED_README.md
+
+   conf/conf_schema.json
+
+   lib/core/llm_connector.class.php
+   lib/chat_helper_functions.php
+   lib/data_functions.php
+
+   ui/core/llm_connectors.php
+   ui/events-memories.php
+
+   prompts/dialogue_prompt.php
+
+3. SET PERMISSIONS
+   Ensure all files are readable by your web server:
+   chmod 644 connector/*.php
+   chmod 644 lib/*.php
+   chmod 644 lib/core/*.php
+   chmod 644 ui/core/*.php
+   chmod 644 conf/*.json
+   chmod 644 prompts/*.php
+
+4. VERIFY INSTALLATION
+   - Access CHIM web interface
+   - Navigate to LLM Connectors configuration
+   - Create or edit a connector
+   - Verify new fields are visible:
+     * Toggle Thinking (in reasoning section)
+     * Response Format dropdown (JSON/Simple)
+     * Max Dialogue Cache Context Size
+     * Custom System Instruction
+     * Custom Last Instruction
+
+5. CONFIGURE CONNECTOR
+   a. Basic Settings:
+      - Set connector name
+      - Select service (OpenRouter/OpenAI/etc)
+      - Enter API URL and credentials
+      - Choose model
+
+   b. Caching Settings:
+      - Provider Caching Type: Select your provider
+      - Response Format: Choose JSON or Simple
+      - Uncached Dialogue Count: Default 4 is recommended
+
+   c. Thinking/Reasoning Settings:
+      - Toggle Thinking: Check to enable reasoning
+      - Thinking Tokens: Set max tokens (default 1000)
+      - Effort Level: Choose minimal/low/medium/high
+
+   d. Simple Format Options (if using Simple format):
+      - Include Mood: Recommended ON
+      - Include Listener: Recommended ON
+      - Include Actions: As needed
+      - Include Target: As needed
+
+   e. Advanced Settings:
+      - Minimize Quality Instructions: Recommended ON
+      - Max Dialogue Cache Context Size: Default 93
+      - Custom System Instruction: Optional
+      - Custom Last Instruction: Optional
+
+6. TEST CONFIGURATION
+   a. Test with JSON Format:
+      - Set Response Format to "JSON"
+      - Enable Toggle Thinking
+      - Send a test message
+      - Verify reasoning is performed (check provider logs)
+
+   b. Test with Simple Format:
+      - Set Response Format to "Simple"
+      - Enable Toggle Thinking
+      - Send a test message
+      - Verify natural language output
+      - Verify reasoning is performed (check provider logs)
+
+UPGRADING FROM PREVIOUS VERSIONS
+---------------------------------
+
+From v1.0.12:
+- Your existing settings will be preserved
+- New fields will use default values
+- Test thinking toggle after upgrade
+
+From v1.1.x (broken versions):
+- Backup your settings before upgrading
+- After upgrade, re-check thinking toggle settings
+- Verify settings save correctly
+- Test both JSON and Simple formats
+
+TROUBLESHOOTING
+---------------
+
+Issue: Thinking toggle doesn't save
+Solution: This is fixed in v1.2.1. If still occurring, check:
+- Browser console for JavaScript errors
+- PHP error logs for save errors
+- Verify file permissions
+
+Issue: Reasoning not working with Simple format
+Solution: This is fixed in v1.2.1. Prefill is now disabled when
+thinking is enabled to allow reasoning to work.
+
+Issue: Simple format not working
+Solution: This is fixed in v1.2.1. Ensure you:
+- Selected "Simple" in Response Format dropdown
+- Configured Simple Format Content Options
+- Have thinking toggle OFF if you need format prefill
+
+Issue: New fields not appearing in UI
+Solution:
+- Clear browser cache
+- Verify ui/core/llm_connectors.php was updated
+- Check PHP error logs
+
+CONFIGURATION REFERENCE
+-----------------------
+
+Response Format:
+- JSON: Structured output in JSON format
+- Simple: Natural language output with tags
+
+Thinking Toggle:
+- ON: Enables reasoning/thinking for compatible models
+- OFF: Standard completion without reasoning
+
+Provider Caching:
+- Anthropic: For Claude models with prompt caching
+- OpenAI: For GPT models with cache support
+- Gemini: For Gemini models with caching
+
+Simple Format Content Options:
+- Include Mood: Adds mood indicators to output
+- Include Listener: Specifies conversation target
+- Include Actions: Includes action descriptions
+- Include Target: Specifies action targets
+
+COMPATIBILITY NOTES
+-------------------
+
+Compatible Models:
+- OpenAI: o1, o3, o4, gpt-5 series (reasoning models)
+- Anthropic: Claude 3.5 Sonnet, Claude 4 (thinking support)
+- Google: Gemini 2.0 series (thinking support)
+- DeepSeek: DeepSeek R1, V3 (reasoning models)
+- Other: Any model with thinking/reasoning API support
+
+Provider Requirements:
+- Thinking/Reasoning: Requires provider API support
+- Caching: Requires provider cache API support
+- Simple Format: Works with all text generation models
+
+SUPPORT & DOCUMENTATION
+------------------------
+
+For detailed change information:
+- See CHIM_Cached_Connector_v1.2.1_CHANGELOG.txt
+- See CLAUDE_changelog.md for complete audit trail
+
+For CHIM documentation:
+- Refer to main CHIM documentation
+- Check CHIM GitHub repository
+
+ADDITIONAL FILES
+----------------
+
+This package includes:
+- CHIM_Cached_Connector_v1.2.1_CHANGELOG.txt - Release notes
+- CLAUDE_changelog.md - Complete development log
+- OPENROUTERJSONCACHED_README.md - Connector documentation
+- This file - Installation instructions
+
+LICENSE
+-------
+This connector is distributed as part of CHIM and follows the same
+license terms as the main CHIM project.
+
+VERSION INFORMATION
+-------------------
+Package: CHIM Cached Connector v1.2.1
+Release Date: 2025-11-15
+CHIM Compatibility: 2.0.3
+Connector Type: OpenRouter JSON Cached with Advanced Features

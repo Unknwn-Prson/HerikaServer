@@ -169,3 +169,62 @@ if ($this->_responseFormat === 'simple' && !$toggleThinking) {
 - This maintains backward compatibility: simple format without thinking still gets prefill
 - Thinking now works with BOTH JSON and simple formats
 
+### Entry 7: Create v1.2.1 release package
+**Timestamp:** 2025-11-15 16:00 UTC
+**Files Created:**
+- `CHIM_Cached_Connector_v1.2.1.zip` (169KB release package)
+- `CHIM_Cached_Connector_v1.2.1_CHANGELOG.txt` (comprehensive release notes)
+- `CHIM_Cached_Connector_v1.2.1_INSTALLATION.txt` (installation guide)
+
+**Files Updated:**
+- `connector/openrouterjsoncached.php` - Version updated to v1.2.1 (line 12)
+
+**Action:** Created complete release package with all necessary files for distribution
+
+**Package Contents:**
+1. **Connector Files:**
+   - openrouterjsoncached.php (v1.2.1)
+   - openrouterjsoncached_helpers.php (v1.1.20)
+   - openrouterjsoncached_verbose.php (v1.0.12 - not updated)
+   - OPENROUTERJSONCACHED_README.md
+
+2. **Configuration:**
+   - conf/conf_schema.json
+
+3. **Library Files:**
+   - lib/core/llm_connector.class.php
+   - lib/chat_helper_functions.php
+   - lib/data_functions.php
+
+4. **UI Files:**
+   - ui/core/llm_connectors.php (with new fields)
+   - ui/events-memories.php
+
+5. **Prompts:**
+   - prompts/dialogue_prompt.php (v1.1.20)
+
+6. **Documentation:**
+   - INSTALLATION_INSTRUCTIONS.txt (complete installation guide)
+   - CHANGELOG.txt (comprehensive release notes)
+   - CLAUDE_changelog.md (complete development audit trail)
+   - PACKAGE_CONTENTS.txt (package manifest)
+
+**Version Summary - v1.2.1:**
+- Complete rebuild from v1.0.12 baseline
+- Working thinking toggle (saves/loads/functions correctly)
+- Working simple format implementation
+- Thinking works with BOTH JSON and simple formats
+- New configuration fields (4 additional metadata fields)
+- 4-decimal precision for parameters
+- Fixed prefill/reasoning incompatibility
+
+**Conceptual Goal:** Provide complete, tested, working package for users to install
+
+**Critical Analysis:**
+- Package tested: thinking toggle works in JSON format ✓
+- Package tested: thinking toggle works in simple format ✓
+- Package tested: simple format produces correct output ✓
+- All files from v1.0.12 baseline included
+- Documentation comprehensive and user-friendly
+- Ready for production deployment
+
