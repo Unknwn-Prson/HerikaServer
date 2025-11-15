@@ -94,3 +94,41 @@
 - Maintains backward compatibility (stored values unchanged)
 - Follows v1.1.22 pattern exactly
 
+### Entry 5: Replace simple format implementation with working v1.1.20 version
+**Timestamp:** 2025-11-15 15:25 UTC
+**Files Replaced:**
+- `connector/openrouterjsoncached.php` (complete replacement)
+- `connector/openrouterjsoncached_helpers.php` (complete replacement)
+- `prompts/dialogue_prompt.php` (complete replacement)
+
+**Source:** aiagent branch (v1.1.20 - last known working simple format before thinking toggle fix attempts)
+**Action:** Complete replacement of connector and prompt files with v1.1.20 versions
+
+**What This Adds:**
+1. **Working Simple Format Parser:** Complete rewrite of natural language response parsing
+2. **Response Format Setting:** Support for `response_format` metadata field (json/simple)
+3. **Simple Format Content Options:** Proper handling of include_mood, include_listener, include_actions, include_target flags
+4. **Stream Processing:** Enhanced streaming with simple format state machine
+5. **Quality Instructions:** minimize_quality_prompt integration in prompts
+
+**Critical Analysis - Thinking Toggle Preservation:**
+✅ **Verified thinking toggle code is INTACT in v1.1.20:**
+- Line 309: `$toggleThinking = isset($GLOBALS["CONNECTOR"][$this->name]["toggle_thinking"]) ? $GLOBALS["CONNECTOR"][$this->name]["toggle_thinking"] : false;`
+- Line 310: `$thinkingTokens` reading preserved
+- Line 311: `$effort_level` reading preserved
+- Reasoning detection functions present (isOpenAIReasoningModel, isAlwaysReasoningModel)
+- Reasoning configuration building preserved (lines 636+)
+
+**Why This Won't Break Thinking Toggle:**
+1. v1.1.20 is BEFORE the broken fix attempts that removed name attributes
+2. All thinking toggle metadata reading uses same GLOBALS pattern
+3. No JavaScript consolidation changes in connector files
+4. Thinking toggle worked in v1.1.20 (confirmed by user testing)
+
+**Changes Summary:**
+- connector/openrouterjsoncached.php: +442 lines, -71 lines
+- connector/openrouterjsoncached_helpers.php: +13 lines (minor updates)
+- prompts/dialogue_prompt.php: +69 lines (quality instructions, custom instructions)
+
+**Note:** Verbose connector (openrouterjsoncached_verbose.php) intentionally NOT updated per user request
+

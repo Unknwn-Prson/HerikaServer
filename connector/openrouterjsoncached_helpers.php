@@ -537,7 +537,7 @@ function extractSimpleFormatFromBuffer($buffer, $includeMood, $includeListener, 
         ];
     }
 
-    $groupPattern = str_repeat('\(([^)]+)\)', $groupCount);
+    $groupPattern = str_repeat('\(?([^)]+)\)', $groupCount);
     $pattern = '/^\s*' . $groupPattern . '\s*(.*)$/s';
 
     if (preg_match($pattern, $buffer, $matches)) {
@@ -547,15 +547,19 @@ function extractSimpleFormatFromBuffer($buffer, $includeMood, $includeListener, 
         }
         $message = $matches[$groupCount + 1];
 
+        // Trim whitespace first
+        $message = trim($message);
+
         $result = [
             'mood' => '',
             'listener' => '',
             'action' => 'Talk',
             'target' => '',
-            'message' => trim($message),
+            'message' => $message,
             'found' => true
         ];
 
+        // Parse metadata fields FIRST so we know what the action is
         $groupIndex = 0;
         if ($includeMood && isset($groups[$groupIndex])) {
             $result['mood'] = trim($groups[$groupIndex]);
@@ -573,6 +577,11 @@ function extractSimpleFormatFromBuffer($buffer, $includeMood, $includeListener, 
             $result['target'] = trim($groups[$groupIndex]);
             $groupIndex++;
         }
+
+        // Do NOT strip leading colons - they are intentional formatting
+        // Format: (mood)(listener)(action)(target): message or action description
+        // The leading : is part of the simple format specification
+        // Preserved in all cases regardless of action type
 
         return $result;
     }
