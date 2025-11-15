@@ -70,3 +70,27 @@
 - All use SAME `name` attributes (no suffix) so form submission works correctly
 - Follows existing modal pattern from v1.0.12 (e.g., `toggle_thinking_modal`)
 
+### Entry 4: Update decimal precision from 2 to 4 decimals
+**Timestamp:** 2025-11-15 15:15 UTC
+**File Modified:** `/home/user/HerikaServer/ui/core/llm_connectors.php`
+**Section:** Lines 485-492, 1518-1525 (both $ranges arrays)
+**Action:** Changed step values from 0.01 to 0.0001 for all decimal parameters
+**Fields Updated:**
+- temperature
+- presence_penalty
+- frequency_penalty
+- repetition_penalty
+- top_p
+- min_p
+- top_a
+
+**Pattern Used:** Global replacement `'step'=>0.01` → `'step'=>0.0001`
+**Result:** 14 occurrences updated (7 fields × 2 forms)
+**Conceptual Goal:** Match v1.1.22's 4-decimal precision for better parameter control
+
+**Critical Analysis:**
+- This change only affects input step granularity, not validation or storage
+- No changes to JavaScript or consolidation function needed
+- Maintains backward compatibility (stored values unchanged)
+- Follows v1.1.22 pattern exactly
+
