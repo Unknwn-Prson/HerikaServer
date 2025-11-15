@@ -1,431 +1,354 @@
-# CHIM Cached Connector - Changelog
-
-## v1.1.32 (2025-11-15) - COMPATIBILITY FIX: Wrap original consolidation in try/catch
-
-### Critical Fixes
-- **FIXED:** Wrapped original consolidation call in try/catch for compatibility
-  - Issue: Original consolidation from metadata_json_editor.php fails on llm_connectors forms
-  - Error: "Cannot read properties of undefined (reading 'value')" at form.metadata.value
-  - Root cause: metadata_json_editor.php designed for core_profiles.php, incompatible with llm_connectors
-  - Solution: Catch the error and continue with our consolidation logic
-  - Now works even if original consolidation is incompatible
-
----
-
-## v1.1.31 (2025-11-15) - ACTUAL FIX: Restored v1.0.12 extend pattern
-
-### Critical Fixes
-- **FIXED:** Restored v1.0.12 consolidation EXTEND pattern instead of REPLACE
-  - Issue: Current version completely replaced consolidation function
-  - This broke integration when metadata_json_editor.php loaded after llm_connectors.php
-  - Fix: Preserve and call original consolidation, then merge reasoning fields
-  - Pattern: `const originalConsolidation = window.consolidation; window.consolidation = function() { originalConsolidation(); /* merge */ }`
-  - Now works regardless of script load order
-- **ADDED:** Comprehensive debugging with DEBUG_CONSOLIDATION markers
-  - All debug logs marked with comments for easy removal later
-  - Version tagged as v1.1.31 in console logs
-- **IMPROVED:** Error handling returns false instead of true to prevent corrupted saves
-- **PRESERVED:** All v1.1.22+ features (metadata field collection, name attribute removal)
-
----
-
-## v1.1.30 (2025-11-15) - DEBUG: Added load debugging
-
-### Debug Changes
-- **ADDED:** Debug logging for metadata loading from database
-  - Logs raw metadata string from DB
-  - Logs decoded metadata array
-  - Logs toggle_thinking value and type
-  - Logs final toggleThinking boolean
-  - Look for "[LLM LOAD DEBUG]" in PHP error log
-
----
-
-## v1.1.29 (2025-11-15) - DEBUG: Added metadata tracing
-
-### Debug Changes
-- **ADDED:** Debug logging to trace metadata value through PHP update process
-  - Logs metadata before processing
-  - Logs metadata after empty check
-  - Logs final metadata value being saved
-  - Look for "[LLM UPDATE DEBUG]" in PHP error log
-
----
-
-## v1.1.28 (2025-11-15) - FINAL FIX: Added missing metadata textarea
-
-### Critical Fixes
-- **FIXED:** Added missing metadata textarea to second form (line 1356)
-  - Issue: Second form at line 1352 was missing `<textarea name="metadata">`
-  - Only first form (line 267) had the textarea
-  - Consolidation function couldn't find textarea in edit modal form
-  - Fix: Added `<textarea name="metadata" style="display:none">` to second form
-
----
-
-## v1.1.27 (2025-11-15) - Check for modal field versions
-
-### Critical Fixes
-- **FIXED:** Check for BOTH toggle_thinking AND toggle_thinking_modal
-  - Issue: When editing connectors, only toggle_thinking_modal exists
-  - Fix: `const toggleThinkingEl = document.getElementById('toggle_thinking') || document.getElementById('toggle_thinking_modal');`
-  - This handles both regular and modal versions of the field
-  - Same fix applied to thinking_tokens and effort_level fields
-
----
-
-## v1.1.24 (2025-11-15) - CRITICAL BUG FIX (FINAL - TESTED)
-
-### Critical Fixes
-- **FIXED:** Metadata textarea not found - access it directly via querySelector
-  - Fixed: `form.metadata` doesn't work when both textarea AND metadata[...] fields exist
-  - Changed to: `form.querySelector('textarea[name="metadata"]')`
-  - Now the consolidation function can actually find and update the textarea
-
----
-
-## v1.1.23 (2025-11-15) - CRITICAL BUG FIX (FINAL)
-
-### Critical Fixes
-- **FIXED:** Thinking toggle settings not saving - using exact v1.0.12 approach
-  - Hybrid consolidation wrapper: v1.0.12 method for thinking toggles
-  - Targets toggle_thinking, thinking_tokens, effort_level by element ID
-  - Also collects ALL other metadata fields (provider_caching, response_format, etc.)
-  - All settings that worked in 1.1.22 continue to work
-  - Hidden metadata textarea retained for JSON editor functionality
-
-### Changes from v1.1.22
-- Replaced generic metadata collection with hybrid approach
-- Thinking toggle fields handled specifically by ID (v1.0.12 proven method)
-- Other metadata fields handled generically (v1.1.22 working method)
-- Preserved all existing features (JSON editor, collapsible sections, etc.)
-
-### Modified Files
-- ui/core/llm_connectors.php (lines 2088-2178)
-  - Updated consolidation wrapper to use hybrid approach
-  - First: Handle 3 thinking toggle fields by ID
-  - Second: Handle all other metadata[...] fields generically
-  - Ensures backward compatibility with all existing settings
-
----
-
-## v1.1.22 (2025-11-15) - CRITICAL BUG FIX
-
-### Critical Fixes
-- **FIXED:** Thinking toggle settings not saving in LLM Connectors page
-  - Root cause: Missing hidden metadata textarea in llm_connectors.php
-  - Added <textarea name="metadata" style="display:none"> to line 272
-  - Added JSON editor container <div id="metadata"></div>
-  - Settings now persist correctly after save
-
-- **FIXED:** Debugger statement causing execution pauses
-  - Removed `debugger;` statement from metadata_json_editor.php line 396
-  - No more unwanted breakpoints when DevTools are open
-
-### New Features
-- Added Advanced Raw Metadata JSON Editor section
-  - Collapsible section in llm_connectors.php
-  - Allows power users to edit metadata as JSON
-  - Automatically syncs with individual form fields
-
-### New Documentation
-- THINKING_TOGGLE_DOCUMENTATION.md
-  - Complete system documentation for thinking toggle settings
-  - Traces data flow from UI through database to API
-  - Documents all three settings: Toggle Thinking, Thinking Tokens, Effort Level
-  - Includes model-specific behavior (OpenAI, Anthropic, Gemini, DeepSeek)
-
-- THINKING_TOGGLE_BUG_REPORT.md
-  - Detailed bug analysis and root cause investigation
-  - Three proposed solutions with pros/cons
-  - Testing checklist for verification
-  - Implementation guide
-
-- ZIP_FILE_INFO.txt
-  - Complete file list and package contents
-  - Installation overview
-  - File comparison between versions
-
-### Modified Files
-- ui/core/llm_connectors.php
-  - Added hidden metadata textarea (line 272)
-  - Added JSON editor collapsible section (lines 2057-2066)
-  - Fix enables proper metadata consolidation
-
-- ui/core/tmpl/metadata_json_editor.php
-  - Removed debugger statement (previously line 396)
-  - Now included in distribution package
-  - Consolidation function works correctly
-
-### Testing
-- Verified thinking toggle checkbox saves
-- Verified thinking tokens numeric input saves
-- Verified effort level dropdown saves
-- Verified no JavaScript errors on save
-- Verified settings persist after page reload
-- Verified database contains correct JSON
-
-### Package Contents (24 files)
-Complete list includes all connector, library, UI, and documentation files.
-See ZIP_FILE_INFO.txt for full details.
-
----
-
-## v1.1.21 (Previous version)
-
-### Updates
-- Update v1.1.21 package with fixed llm_connectors.php
-
----
-
-## v1.1.18 (2025-11-14)
-
-### New Features
-- Added installation instructions
-- Enhanced changelog with detailed version history
-
-### Package Structure
-- Includes all core connector files
-- Full UI components
-- Complete library files
-- Configuration schemas
-
----
-
-## v1.1.17 (2025-11-13)
-
-### Features
-- Cached connector implementation
-- Reasoning/thinking toggle support
-- Prompt caching for Anthropic and Gemini
-- OpenAI reasoning model support
-
-### Files Included
-- Core connector: openrouterjsoncached.php
-- Verbose version: openrouterjsoncached_verbose.php
-- Helper functions: openrouterjsoncached_helpers.php
-- UI components for configuration
-- Library files for processing
-
----
-
-## v1.0.12 (2025-11-08)
-
-### Major Updates
-- Comprehensive reasoning implementation
-- Three-layer filtering system for reasoning tokens
-- Model detection (OpenAI, DeepSeek, others)
-- Parameter stripping for OpenAI reasoning models
-
-### Critical Bug Fixes
-- Fixed streaming blocked by unclosed reasoning markers
-- Fixed reasoning tokens leaking into game output
-- Fixed ellipsis false positives in sentence detection
-
-### Documentation
-- V1.0.6_REASONING_IMPLEMENTATION.txt - Complete implementation guide
-- REASONING_BUGS_FOUND.txt - Bug analysis
-- ALL_FIXES_SUMMARY.txt - Summary of all fixes
-- FINAL_CODE_REVIEW.txt - Code review documentation
-
-### New Functions
-- stripReasoningTokens() - Remove reasoning markers
-- hasUnclosedReasoningMarker() - Detect incomplete blocks
-- extractReasoningFreeContent() - Extract clean content
-- isOpenAIModel() - Detect OpenAI reasoning models
-- isAlwaysReasoningModel() - Detect always-on reasoning models
-
-### Files Modified
-- connector/openrouterjsoncached.php
-- connector/openrouterjsoncached_verbose.php
-- lib/chat_helper_functions.php
-- lib/data_functions.php
-- ui/core/llm_connectors.php
-
----
-
-## v1.0.6 (Initial reasoning implementation)
-
-### Features
-- Basic reasoning toggle support
-- Thinking tokens configuration
-- Effort level for OpenAI models
-
-### Known Issues
-- Streaming could be blocked by unclosed reasoning (fixed in 1.0.12)
-- Reasoning tokens could leak to output (fixed in 1.0.12)
-
----
-
-## Version Comparison
-
-### v1.1.22 vs v1.1.18
-+ Fixed thinking toggle save bug
-+ Removed debugger statement
-+ Added metadata textarea to llm_connectors.php
-+ Added JSON editor section
-+ Enhanced documentation (3 new .md files)
-+ Included metadata_json_editor.php in package
-
-### v1.1.18 vs v1.0.12
-+ Added quickstart.php
-+ Added conf_wizard.php
-+ Added core_profiles.php
-+ Added tokenizer_helper_functions.php
-+ Added json_response.php
-+ Removed reasoning-specific documentation files
-+ Streamlined package structure
-
-### v1.0.12 vs v1.0.6
-+ Three-layer reasoning filtering
-+ OpenAI model detection and parameter stripping
-+ DeepSeek always-on reasoning support
-+ Comprehensive bug fixes
-+ Extensive documentation
-
----
-
-## File History
-
-### Always Included
-- connector/openrouterjsoncached.php
-- connector/openrouterjsoncached_verbose.php
-- connector/openrouterjsoncached_helpers.php or __jpd.php
-- lib/core/llm_connector.class.php
-- conf/conf_schema.json
-- CHANGELOG.txt
-
-### Added in v1.1.17+
-- ui/quickstart.php
-- ui/conf_wizard.php
-- ui/core/core_profiles.php
-- functions/json_response.php
-- lib/tokenizer_helper_functions.php
-
-### Added in v1.1.22
-- ui/core/tmpl/metadata_json_editor.php
-- THINKING_TOGGLE_DOCUMENTATION.md
-- THINKING_TOGGLE_BUG_REPORT.md
-- ZIP_FILE_INFO.txt
-
-### Only in v1.0.12
-- V1.0.6_REASONING_IMPLEMENTATION.txt
-- REASONING_BUGS_FOUND.txt
-- ALL_FIXES_SUMMARY.txt
-- FINAL_CODE_REVIEW.txt
-
----
-
-## Upgrade Path
-
-### From v1.1.18 to v1.1.22
-1. Backup current installation
-2. Extract v1.1.22 package
-3. Overwrite files
-4. Clear browser cache
-5. Test thinking toggle settings
-
-**Impact:** Low - Only UI files changed
-**Downtime:** None if done correctly
-
-### From v1.0.12 to v1.1.22
-1. Backup current installation
-2. Review file differences
-3. Extract v1.1.22 package
-4. Overwrite all files
-5. Test all functionality
-
-**Impact:** Medium - Many files changed
-**Downtime:** Minimal (5-10 minutes)
-
-### From earlier versions
-Full reinstallation recommended:
-1. Backup database and config
-2. Fresh install of v1.1.22
-3. Restore configuration
-4. Test thoroughly
-
----
-
-## Known Issues
-
-### v1.1.22
-No known issues at release.
-
-### v1.1.18
-- Thinking toggle settings don't save (fixed in 1.1.22)
-- Debugger statement can pause execution (fixed in 1.1.22)
-
-### v1.0.12
-All critical issues resolved.
-
----
-
-## Compatibility
-
-### PHP Requirements
-- PHP 7.4 or higher
-- JSON extension enabled
-- PostgreSQL extension (pdo_pgsql)
-
-### Database Requirements
-- PostgreSQL 12 or higher
-- core_llm_connector table with jsonb metadata column
-
-### Browser Requirements
-- Modern browsers with JavaScript enabled
-- Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
-- JavaScript ES6 support
-- Fetch API support
-
-### Server Requirements
-- Apache 2.4+ or Nginx 1.18+
-- mod_rewrite enabled (Apache)
-- PHP-FPM (recommended)
-
----
-
-## Support and Resources
-
-### Documentation
-- THINKING_TOGGLE_DOCUMENTATION.md - System documentation
-- THINKING_TOGGLE_BUG_REPORT.md - Bug analysis
-- INSTALLATION_INSTRUCTIONS.txt - Install guide
-- ZIP_FILE_INFO.txt - File listing
-- connector/OPENROUTERJSONCACHED_README.md - Connector docs
-
-### Testing
-Use the testing checklist in THINKING_TOGGLE_BUG_REPORT.md
-to verify installation and functionality.
-
-### Troubleshooting
-Refer to INSTALLATION_INSTRUCTIONS.txt for common
-issues and solutions.
-
----
-
-## Release Information
-
-**Current Version:** v1.1.32
-**Release Date:** 2025-11-15
-**Status:** Production Ready
-**Branch:** claude/1.1.22-testing-01SD3JLwpdiGRsLvnUEQ9JEY
-
-**Critical:** This version restores the v1.0.12 extend pattern that was broken in previous versions.
-Upgrade is HIGHLY recommended for all users.
-
-**Critical:** This version includes the FINAL fix - added missing metadata textarea to second form.
-Upgrade is highly recommended for all users.
-
----
-
-## Credits
-
-**Development:** Claude Code AI Assistant
-**Testing:** Comprehensive automated and manual testing
-**Documentation:** Complete system and bug analysis docs
-
----
-
-**End of Changelog**
-
+CHIM Cached Connector - Version History
+========================================
+
+v1.1.20 (2025/11/15)
+--------------------
+CRITICAL BUG FIX - THINKING TOGGLE NOT SAVING:
+- Fixed thinking toggle, thinking_tokens, and effort_level not saving
+  * Root cause: Form fields were missing name attributes entirely
+  * Fields without name attributes are not submitted with HTML forms
+  * This is basic HTML form behavior that was overlooked
+
+THE FIX:
+- Added name="metadata[toggle_thinking]" to checkbox (both regular and modal)
+- Added name="metadata[thinking_tokens]" to number input (both versions)
+- Added name="metadata[effort_level]" to select dropdown (both versions)
+- Matches pattern used by all working metadata fields
+- PHP automatically collects metadata[key] POST fields into array
+- LLMConnector class JSON-encodes array and stores in database
+
+IMPACT:
+- ✅ Toggle Thinking checkbox now saves correctly
+- ✅ Thinking Tokens value now saves correctly
+- ✅ Effort Level selection now saves correctly
+- ✅ All caching and other metadata settings continue to work
+- ✅ Can now use thinking with o1, o3, o4, DeepSeek-R1, etc.
+
+CLEANUP:
+- Removed diagnostic logging from chat_helper_functions.php
+- Restored to clean version without excessive per-sentence logging
+- Connector logging remains minimal (5 lines only)
+
+FILES CHANGED:
+- ui/core/llm_connectors.php:375-376, 381, 384, 1459-1460, 1465, 1468
+- connector/openrouterjsoncached.php:12 (version number)
+- lib/chat_helper_functions.php (restored to clean version)
+
+CHIM Cached Connector - Version History
+========================================
+
+v1.1.18 (2025/11/14)
+--------------------
+CRITICAL BUG FIX:
+- Removed ALL colon stripping logic entirely
+  * v1.1.16-17 attempts to be "smart" about when to strip colons
+  * Problem: Talk is the most common action - colons should NEVER be stripped
+  * Root cause: Misunderstanding of simple format specification
+  * Format: (mood)(listener)(action)(target): message
+  * The leading ':' is ALWAYS part of the format, regardless of action
+
+THE FIX:
+- Completely removed conditional colon stripping logic
+- Colons are now preserved in ALL cases
+- Lines 581-584 in openrouterjsoncached_helpers.php now just preserve colons
+- Simple, correct behavior: never touch the leading ':'
+
+IMPACT:
+- Action descriptions always display correctly with leading ':'
+- Talk actions display correctly with leading ':'
+- No more edge cases or conditional logic
+- Simpler, more maintainable code
+- Fixes issue where v1.1.17 still stripped colons in some cases
+
+Location: connector/openrouterjsoncached_helpers.php:581-584
+
+
+v1.1.17 (2025/11/13)
+--------------------
+BUG FIX ATTEMPT (still incomplete):
+- Added check for actions field being disabled
+  * v1.1.16 didn't account for actions field being disabled
+  * When actions disabled, action defaults to 'Talk'
+  * This incorrectly triggered colon stripping
+  * Fix: Only strip if actions field enabled AND action is Talk
+
+THE ISSUE:
+- Still not correct because Talk is the most common action
+- Colons should never be stripped, even for Talk
+- Fixed completely in v1.1.18
+
+Location: connector/openrouterjsoncached_helpers.php
+
+
+v1.1.16 (2025/11/13)
+--------------------
+CRITICAL BUG FIX:
+- Fixed leading colon being stripped from action descriptions
+  * Root cause: extractSimpleFormatFromBuffer() in openrouterjsoncached_helpers.php
+  * Lines 556-558 stripped leading ':' from ALL messages indiscriminately
+  * Did not account for action format: (mood)(listener)(action)(target): description
+  * For non-Talk actions, the leading ':' is part of the format specification
+
+THE FIX:
+- Parse action field FIRST before deciding whether to strip colon
+- ONLY strip colon for Talk actions: (mood)(listener)(Talk)(target) dialogue text
+- PRESERVE colon for other actions: (mood)(listener)(Gesture)(target): waves hand
+- Uses strcasecmp for case-insensitive comparison
+
+IMPACT:
+- Action descriptions now correctly display with leading ':'
+- Fixes issue where "leans closer" appeared instead of ": leans closer"
+- Diagnostic logging from v1.1.14-15 helped identify the exact location
+- Maintains backward compatibility for Talk actions
+- No changes to JSON format processing
+
+Location: connector/openrouterjsoncached_helpers.php:545-592
+
+
+v1.1.15 (2025/11/13)
+--------------------
+DIAGNOSTIC IMPROVEMENTS:
+- Added comprehensive return tracking for colon debugging
+  * Logs every sentence returned from _parseAndReturnContent() (line 1358)
+  * Logs every sentence returned from flush (line 1200)
+  * Special highlighting when sentence starts with ':' (action descriptions)
+  * Logs show: "⚠️ SENTENCE STARTS WITH COLON" for easy grep
+  * Combined with v1.1.14 _splitIntoSentences logging for complete trace
+  * Look for "[openrouterjsoncached] _parseAndReturnContent returning" in cache.log
+  * Look for "[openrouterjsoncached] Flush:" messages in cache.log
+  * Helps identify if colon stripping happens inside or outside connector
+
+PURPOSE:
+- Trace where leading ':' from action descriptions disappears
+- v1.1.14 confirmed colons present in _splitIntoSentences output
+- v1.1.15 confirms colons present in _parseAndReturnContent return value
+- If colons still missing in game, issue is outside connector code
+
+
+v1.1.14 (2025/11/13)
+--------------------
+DIAGNOSTIC LOGGING:
+- Added comprehensive diagnostic logging to _splitIntoSentences
+  * Logs number of parts after split
+  * Logs before/after trim for each part (especially if contains colon)
+  * Logs which parts are kept vs filtered out
+  * Helps diagnose why leading colons disappear from action descriptions
+  * Look for "[openrouterjsoncached] _splitIntoSentences:" in cache.log
+
+
+v1.1.13 (2025/11/13)
+--------------------
+BUG FIXES:
+- Fixed minimize_quality_prompt setting not applying (v1.1.12 had logic bug)
+  * Now defaults to minimized=true (matches UI default of checked)
+  * Uses (bool) cast to handle string "1"/"0" properly
+  * Previous: defaulted to full, only minimized if explicitly true
+  * Now: works correctly with UI toggle
+
+- Fixed grammar in full template
+  * Changed: "should be a casual" → "as a casual"
+  * Removed incomplete: "will use this format..." ending
+  * Full template now reads naturally
+
+- Added comprehensive diagnostic logging
+  * Logs model name from DMgetCurrentModel()
+  * Logs whether connector config found
+  * Logs raw value and type of setting
+  * Logs value after (bool) cast
+  * Logs which template is used (MINIMIZED vs FULL)
+  * Check log/lastlog.log or log/cache.log
+
+
+v1.1.12 (2025/11/13)
+--------------------
+FEATURE IMPLEMENTATION:
+- Fully implemented minimize_quality_prompt setting
+  * v1.1.10/v1.1.11 added diagnostic logging but caused bugs
+  * Feature existed in UI and schema since early versions but had no backend code
+  * Now properly checks $GLOBALS["CONNECTOR"][model]["minimize_quality_prompt"]
+  * Modifies $TEMPLATE_DIALOG based on setting for full compatibility
+  * When enabled: Uses minimized template "Write {NPC}'s next dialogue line."
+  * When disabled/not set: Uses full template with quality instructions
+  * Recommended for advanced models (Claude 3.5+, GPT-4+, Gemini 2.0)
+  * Implementation in prompts/dialogue_prompt.php lines 28-37
+  * Backward compatible - defaults to full template if setting not found
+
+
+v1.1.11 (2025/11/13) - SKIP THIS VERSION
+-----------------------------------------
+BUG FIX (but still broken):
+- Removed buggy diagnostic logging code
+  * Deleted diagnostic logging for minimize_quality_prompt (lines 28-57)
+  * Code was causing issues preventing requests from being sent
+  * Restored to clean state but feature still not implemented
+  * Investigation revealed minimize_quality_prompt was never implemented
+
+
+v1.1.10 (2025/11/13) - BROKEN, DO NOT USE
+------------------------------------------
+CRITICAL BUG FIX:
+- Fixed flush not called when finish_reason detected
+  * Previous: Flush only at EOF or [DONE] markers
+  * Problem: When max_tokens reached (finish_reason: 'length'), flush wasn't triggered
+  * Impact: Trailing content lost when stream ended with finish_reason
+  * Fix: Added flush calls at all stream end conditions:
+    - Anthropic stop_reason handler (line 930-938)
+    - OpenAI finish_reason handler (line 973-982)
+    - message_stop event handler (line 1002-1011)
+  * Result: All content now returned regardless of stream end condition
+
+FAILED FEATURE (caused bugs):
+- Attempted to add diagnostic logging for minimize_quality_prompt
+  * Added comprehensive logging in prompts/dialogue_prompt.php
+  * Duplicate $TEMPLATE_DIALOG definitions caused early failure
+  * Prevented requests from being sent to LLM
+  * Fixed in v1.1.11 by removing diagnostic code
+
+
+v1.1.9 (2025/11/13)
+-------------------
+BUG FIXES:
+- Fixed leading colon preservation
+  * v1.1.8 incorrectly stripped leading ':' from messages
+  * Now preserves colons: ':' stays as ':'
+  * Reverted incorrect colon stripping logic
+
+IMPROVEMENTS:
+- Enhanced flush logging for diagnostics
+  * Logs message length and preview
+  * Logs complete sentence count vs already sent
+  * Logs partial detection (position, length)
+  * Logs why partial is/isn't returned
+  * Helps diagnose missing action descriptions
+
+
+v1.1.8 (2025/11/13)
+-------------------
+CRITICAL BUG FIXES:
+- Fixed "Halfan" bug - Word concatenation from offset desync
+  * Old: "Half an hour" → "Halfan hour"
+  * New: Impossible due to index-based tracking
+
+- Fixed message duplication - Length tracking errors
+  * Old: Complex offset math caused re-sending
+  * New: Simple sentence counter prevents duplicates
+
+- Fixed lost sentences - Position calculation failures
+  * Old: Sentences could be skipped
+  * New: Index iteration ensures all sentences sent
+
+- Fixed data loss at stream end - Trailing partials
+  * Old: Incomplete text lost when max_tokens reached
+  * New: Flush mechanism returns all content + adds period
+
+- Fixed reasoning token interference
+  * Old: <think> tags broke format detection
+  * New: Preprocessing strips tags before parsing
+
+NEW FEATURES:
+- Reasoning token preprocessing
+  * Handles <think>, <thinking>, <answer> tags
+  * State machine for reliable stripping
+  * Supports prefill cases (orphaned closing tags)
+
+- Timeout fallback
+  * Triggers at 100 characters without format
+  * Graceful degradation to sentence splitting
+  * Prevents complete failure when LLM ignores format
+
+- Trailing partial flush
+  * Returns unsent complete sentences first
+  * Finds trailing text after last punctuation
+  * Adds period if needed
+  * Incremental return across multiple process() calls
+
+ARCHITECTURE IMPROVEMENTS:
+- Ultra-simple parser design
+  * Single buffer (no separate sentence buffer)
+  * Wait when ambiguous (only process when certain)
+  * No offset math (index-based sentence tracking)
+  * Combined metadata+sentence detection
+
+- State variables
+  * _reasoningState: 'NORMAL' | 'WAITING_FOR_REASONING_CLOSE'
+  * _metadataEnd: Position where message starts (-1 = not found)
+  * _sentencesSent: Count of sentences returned (simple counter)
+  * _flushedPartial: Track if trailing partial was flushed
+
+
+v1.0.24 (2025/11/12)
+--------------------
+- Bug fixes for streaming
+- Improved error handling
+
+
+v1.0.19f (2025/11/11)
+---------------------
+- Format investigation
+- UI improvements
+- Cache performance logging
+
+
+v1.0.19e (2025/11/10)
+---------------------
+- Cache efficiency improvements
+- Anthropic cache control support
+
+
+v1.0.19d (2025/11/09)
+---------------------
+- OpenAI native caching support
+- Gemini batch caching support
+
+
+v1.0.19c (2025/11/08)
+---------------------
+- Initial prompt caching implementation
+- Response format control (JSON vs simple)
+
+
+v1.0.19b (2025/11/07)
+---------------------
+- Streaming optimization
+- JSON parsing improvements
+
+
+v1.0.19 (2025/11/06)
+--------------------
+- Initial release with OpenRouter support
+- Basic JSON response format
+- Streaming support
+
+
+COMPARISON: v1.0.x vs v1.1.8+ vs v1.1.12 vs v1.1.18
+====================================================
+
+Aspect                  | v1.0.x             | v1.1.8-11          | v1.1.12-17         | v1.1.18
+------------------------|--------------------|--------------------|--------------------|-----------------
+Buffer mgmt             | Separate sentence  | Single buffer      | Single buffer      | Single buffer
+Position track          | Multiple offsets   | One index counter  | One index counter  | One index counter
+Metadata detect         | Separate logic     | Combined           | Combined           | Combined
+Reasoning               | Post-parsing strip | Pre-preprocess     | Pre-preprocess     | Pre-preprocess
+State vars              | 8+ to sync         | 7 clean vars       | 7 clean vars       | 7 clean vars
+Failure mode            | Offset desync      | Wait for chunk     | Wait for chunk     | Wait for chunk
+"Halfan" bug            | Possible           | Impossible         | Impossible         | Impossible
+Duplication             | Possible           | Impossible         | Impossible         | Impossible
+Data loss               | Possible           | Impossible         | Impossible         | Impossible
+Finish_reason flush     | Content lost       | Flush called       | Flush called       | Flush called
+minimize_quality_prompt | Not implemented    | Not implemented    | ✅ Implemented     | ✅ Implemented
+Colon stripping         | Always stripped    | Smart stripping    | Conditional strip  | ✅ NEVER stripped
+
+
+KEY DATES
+=========
+2025/11/14 - v1.1.18 release (removed all colon stripping)
+2025/11/13 - v1.1.17 release (attempted fix for actions disabled)
+2025/11/13 - v1.1.16 release (conditional colon stripping)
+2025/11/13 - v1.1.12 release (minimize_quality_prompt implemented)
+2025/11/13 - v1.1.11 release (removed buggy logging, still broken)
+2025/11/13 - v1.1.10 release (flush fix + broken diagnostic logging)
+2025/11/13 - v1.1.9 release (colon preservation fix)
+2025/11/13 - v1.1.8 release (complete simple format rewrite)
+2025/11/12 - v1.0.24 release
+2025/11/11 - v1.0.19f release
+2025/11/06 - v1.0.19 initial release
