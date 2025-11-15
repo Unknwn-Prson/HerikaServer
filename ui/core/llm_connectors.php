@@ -269,6 +269,7 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
             <input type="hidden" name="id" value="<?= $editItem["id"] ?>">
         <?php endif; ?>
         <input type="hidden" name="partial" value="editor">
+        <textarea name="metadata" style="display:none"><?= htmlspecialchars($editItem["metadata"] ?? "{}") ?></textarea>
         <div class="two-col-llm">
             <div>
                 <div class="top-actions" style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
@@ -365,14 +366,20 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                     $tmpMeta = json_decode($editItem["metadata"], true);
                     if (is_array($tmpMeta)) $metadataArr = $tmpMeta;
                 }
+                // DEBUG: Log what we're loading
+                error_log("[LLM LOAD DEBUG] Raw metadata from DB: " . var_export($editItem["metadata"] ?? 'NOT SET', true));
+                error_log("[LLM LOAD DEBUG] Decoded metadata array: " . var_export($metadataArr, true));
+                error_log("[LLM LOAD DEBUG] toggle_thinking value: " . var_export($metadataArr["toggle_thinking"] ?? 'NOT SET', true) . " (type: " . gettype($metadataArr["toggle_thinking"] ?? null) . ")");
+
                 $toggleThinking = isset($metadataArr["toggle_thinking"]) && ($metadataArr["toggle_thinking"] === true || $metadataArr["toggle_thinking"] === 'true' || $metadataArr["toggle_thinking"] === 1);
+                error_log("[LLM LOAD DEBUG] Final toggleThinking bool: " . var_export($toggleThinking, true));
+
                 $thinkingTokens = $metadataArr["thinking_tokens"] ?? '';
                 $effortLevel = $metadataArr["effort_level"] ?? '';
                 ?>
                 <div id="reasoning_details" style="margin-top:8px; margin-left:20px; padding:8px; border-left:2px solid #444;">
                     <label class="label-with-toggle"><span class='tip-label' data-tip='Enable thinking/reasoning for supported models (like o1, DeepSeek-R1). Shows model internal reasoning process.'>Toggle Thinking</span>
-                        <input type="hidden" id="toggle_thinking_hidden" value="false">
-                        <input type="checkbox" id="toggle_thinking" value="true" <?= $toggleThinking ? "checked" : "" ?>>
+                        <input type="checkbox" id="toggle_thinking" <?= $toggleThinking ? "checked" : "" ?>>
                         <span class="toggle-text">On</span>
                     </label>
                     <div style="height:6px;"></div>
@@ -441,26 +448,6 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                     <label for='dialogue_cache_uncached_count'><span class='tip-label' data-tip='Number of most recent dialogue entries to keep uncached (0-10)'>Uncached Dialogue Count</span></label><br>
                     <input type='number' name='metadata[dialogue_cache_uncached_count]' id='dialogue_cache_uncached_count' value='<?= htmlspecialchars($metadata['dialogue_cache_uncached_count'] ?? '4') ?>' min='0' max='10' step='1'><br>
 
-                    <div id="simple_format_options" style="display:none; margin-top:12px; padding:8px; border-left:3px solid #176529;">
-                        <div style="font-size:13px; font-weight:600; margin-bottom:8px;">Simple Format Content Options:</div>
-                        <label class="label-with-toggle"><span>Include Mood</span>
-                            <input type="hidden" name="metadata[include_mood_requirement]" value="0">
-                            <input type="checkbox" name="metadata[include_mood_requirement]" value="1" <?= (!isset($metadata['include_mood_requirement']) || $metadata['include_mood_requirement']) ? 'checked' : '' ?>>
-                        </label><br>
-                        <label class="label-with-toggle"><span>Include Listener</span>
-                            <input type="hidden" name="metadata[include_listener_requirement]" value="0">
-                            <input type="checkbox" name="metadata[include_listener_requirement]" value="1" <?= (!isset($metadata['include_listener_requirement']) || $metadata['include_listener_requirement']) ? 'checked' : '' ?>>
-                        </label><br>
-                        <label class="label-with-toggle"><span>Include Actions</span>
-                            <input type="hidden" name="metadata[include_actions_list]" value="0">
-                            <input type="checkbox" name="metadata[include_actions_list]" value="1" <?= (!isset($metadata['include_actions_list']) || $metadata['include_actions_list']) ? 'checked' : '' ?>>
-                        </label><br>
-                        <label class="label-with-toggle"><span>Include Target</span>
-                            <input type="hidden" name="metadata[include_target_requirement]" value="0">
-                            <input type="checkbox" name="metadata[include_target_requirement]" value="1" <?= (!isset($metadata['include_target_requirement']) || $metadata['include_target_requirement']) ? 'checked' : '' ?>>
-                        </label>
-                    </div>
-
                     <div id="verbose_logging_option" style="display:none; margin-top:12px;">
                         <label class="label-with-toggle"><span class='tip-label' data-tip='Enable detailed logging for testing (verbose connector only)'>Verbose Logging</span>
                             <input type="hidden" name="metadata[verbose_logging]" value="0">
@@ -476,6 +463,52 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                             <span class="toggle-text">On</span>
                         </label>
                     </div>
+
+                    <!-- Response Format Section (Collapsible) -->
+                    <div style="margin-top:16px; border:1px solid #4a4a4a; border-radius:8px; background:#252525;">
+                        <div class="collapsible-header" data-target="response_format_section" style="padding:10px; cursor:pointer; user-select:none; font-weight:600; color:#e9efff; display:flex; justify-content:space-between; align-items:center;">
+                            <span>📝 Response Format</span>
+                            <span class="collapse-arrow">▼</span>
+                        </div>
+                        <div id="response_format_section" class="collapsible-content" style="padding:10px; display:none;">
+                            <div style="margin-top:12px;">
+                                <label class="label-with-toggle"><span class='tip-label' data-tip='Include action selection in response format. Required for NPCs to perform actions.'>Include Actions</span>
+                                    <input type="hidden" name="metadata[include_actions_list]" value="0">
+                                    <input type="checkbox" name="metadata[include_actions_list]" value="1" <?= (!isset($metadata['include_actions_list']) || $metadata['include_actions_list']) ? 'checked' : '' ?>>
+                                </label><br>
+                                <label class="label-with-toggle"><span class='tip-label' data-tip='Include mood/emotion in response. Used for NPC animations and expressions.'>Include Mood</span>
+                                    <input type="hidden" name="metadata[include_mood_requirement]" value="0">
+                                    <input type="checkbox" name="metadata[include_mood_requirement]" value="1" <?= (!isset($metadata['include_mood_requirement']) || $metadata['include_mood_requirement']) ? 'checked' : '' ?>>
+                                </label><br>
+                                <label class="label-with-toggle"><span class='tip-label' data-tip='Include action target (who/what the action is directed at).'>Include Target</span>
+                                    <input type="hidden" name="metadata[include_target_requirement]" value="0">
+                                    <input type="checkbox" name="metadata[include_target_requirement]" value="1" <?= (!isset($metadata['include_target_requirement']) || $metadata['include_target_requirement']) ? 'checked' : '' ?>>
+                                </label><br>
+                                <label class="label-with-toggle"><span class='tip-label' data-tip='Include listener field (who the NPC is talking to). Useful for multi-NPC conversations.'>Include Listener</span>
+                                    <input type="hidden" name="metadata[include_listener_requirement]" value="0">
+                                    <input type="checkbox" name="metadata[include_listener_requirement]" value="1" <?= (!isset($metadata['include_listener_requirement']) || $metadata['include_listener_requirement']) ? 'checked' : '' ?>>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings Section (Collapsible) -->
+                    <div style="margin-top:16px; border:1px solid #4a4a4a; border-radius:8px; background:#252525;">
+                        <div class="collapsible-header" data-target="advanced_settings_section" style="padding:10px; cursor:pointer; user-select:none; font-weight:600; color:#e9efff; display:flex; justify-content:space-between; align-items:center;">
+                            <span>⚙️ Advanced Settings</span>
+                            <span class="collapse-arrow">▼</span>
+                        </div>
+                        <div id="advanced_settings_section" class="collapsible-content" style="padding:10px; display:none;">
+                            <label for='max_dialogue_cache_context_size'><span class='tip-label' data-tip='Maximum number of dialogue entries to cache in temp files. Higher = more context but larger cache files. Recommended: 93'>Max Dialogue Cache Context Size</span></label><br>
+                            <input type='number' name='metadata[max_dialogue_cache_context_size]' id='max_dialogue_cache_context_size' value='<?= htmlspecialchars($metadata['max_dialogue_cache_context_size'] ?? '93') ?>' min='0' step='1'><br>
+
+                            <label for='custom_system_instruction'><span class='tip-label' data-tip='Additional instruction added to the system prompt (after character bio, before dialogue history). Does NOT replace other instructions.'>Custom System Instruction</span></label><br>
+                            <textarea name='metadata[custom_system_instruction]' id='custom_system_instruction' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata['custom_system_instruction'] ?? '') ?></textarea><br>
+
+                            <label for='custom_last_instruction'><span class='tip-label' data-tip='Custom text inserted as second-to-last element in dialogue history (current user message is always last). Appears right before user current request.'>Custom Last Instruction</span></label><br>
+                            <textarea name='metadata[custom_last_instruction]' id='custom_last_instruction' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata['custom_last_instruction'] ?? '') ?></textarea>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div>
@@ -484,14 +517,14 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                 echo "<label for='max_tokens' style='margin-top:10px; display:block;'><span class='tip-label' data-tip='" . htmlspecialchars($tipMaxTokens, ENT_QUOTES) . "'>Max Tokens</span></label>";
                 echo "<input type='number' name='max_tokens' value='" . htmlspecialchars($editItem["max_tokens"] ?? "") . "' min='0' step='1'>";
                 $ranges = [
-                    'temperature' => ['min'=>0,'max'=>2,'step'=>0.01],
-                    'presence_penalty' => ['min'=>-2,'max'=>2,'step'=>0.01],
-                    'frequency_penalty' => ['min'=>-2,'max'=>2,'step'=>0.01],
-                    'repetition_penalty' => ['min'=>0,'max'=>2,'step'=>0.01],
-                    'top_p' => ['min'=>0,'max'=>1,'step'=>0.01],
+                    'temperature' => ['min'=>0,'max'=>2,'step'=>0.0001],
+                    'presence_penalty' => ['min'=>-2,'max'=>2,'step'=>0.0001],
+                    'frequency_penalty' => ['min'=>-2,'max'=>2,'step'=>0.0001],
+                    'repetition_penalty' => ['min'=>0,'max'=>2,'step'=>0.0001],
+                    'top_p' => ['min'=>0,'max'=>1,'step'=>0.0001],
                     'top_k' => ['min'=>0,'max'=>100,'step'=>1],
-                    'min_p' => ['min'=>0,'max'=>1,'step'=>0.01],
-                    'top_a' => ['min'=>0,'max'=>1,'step'=>0.01],
+                    'min_p' => ['min'=>0,'max'=>1,'step'=>0.0001],
+                    'top_a' => ['min'=>0,'max'=>1,'step'=>0.0001],
                 ];
                 $displayDefaults = [
                     'temperature' => 1,
@@ -712,6 +745,46 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
 
         // Initial call to set correct visibility
         updateCachingSettings();
+    })();
+
+    // Collapsible section handlers with localStorage persistence
+    (function(){
+        const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+
+        collapsibleHeaders.forEach(header => {
+            const targetId = header.getAttribute('data-target');
+            const content = document.getElementById(targetId);
+            const arrow = header.querySelector('.collapse-arrow');
+
+            if (!content || !arrow) return;
+
+            // Restore state from localStorage
+            const storageKey = 'llm_collapse_' + targetId;
+            const isCollapsed = localStorage.getItem(storageKey) === 'true';
+
+            if (isCollapsed) {
+                content.style.display = 'none';
+                arrow.textContent = '▶';
+            } else {
+                content.style.display = 'block';
+                arrow.textContent = '▼';
+            }
+
+            // Add click handler
+            header.addEventListener('click', function() {
+                const isCurrentlyVisible = content.style.display !== 'none';
+
+                if (isCurrentlyVisible) {
+                    content.style.display = 'none';
+                    arrow.textContent = '▶';
+                    localStorage.setItem(storageKey, 'true');
+                } else {
+                    content.style.display = 'block';
+                    arrow.textContent = '▼';
+                    localStorage.setItem(storageKey, 'false');
+                }
+            });
+        });
     })();
     </script>
     <div id="toast" class="toast-notification" style="position:static; margin: 8px auto 12px; display:block; opacity:0; transform:none; max-width:960px; width: calc(100% - 20px);"><span class="message"></span></div>
@@ -1286,6 +1359,7 @@ if (typeof window.consolidation !== 'function') {
     <?php if ($editItem): ?>
         <input type="hidden" name="id" value="<?= $editItem["id"] ?>">
     <?php endif; ?>
+    <textarea name="metadata" style="display:none"><?= htmlspecialchars($editItem["metadata"] ?? "{}") ?></textarea>
 
     <div class="two-col-llm">
         <div>
@@ -1388,8 +1462,7 @@ if (typeof window.consolidation !== 'function') {
             </div>
             <div id="reasoning_details_modal" style="margin-top:8px; padding:8px; border-left:2px solid #444;">
                 <label class="label-with-toggle"><span class='tip-label' data-tip='Enable thinking/reasoning for supported models (like o1, DeepSeek-R1). Shows model internal reasoning process.'>Toggle Thinking</span>
-                    <input type="hidden" id="toggle_thinking_hidden_modal" value="false">
-                    <input type="checkbox" id="toggle_thinking_modal" value="true" <?= $toggleThinking ? "checked" : "" ?>>
+                    <input type="checkbox" id="toggle_thinking_modal" <?= $toggleThinking ? "checked" : "" ?>>
                     <span class="toggle-text">On</span>
                 </label>
                 <div style="height:6px;"></div>
@@ -1487,6 +1560,32 @@ if (typeof window.consolidation !== 'function') {
                         <span class="toggle-text">On</span>
                     </label>
                 </div>
+
+                <div style="margin-top:12px;">
+                    <label class="label-with-toggle"><span class='tip-label' data-tip='Recommended ON for advanced models (Claude 4.5, GPT-4, Gemini 2.0). Uses minimal quality instructions. Turn OFF for older/smaller models that benefit from explicit guidance.'>Minimize Quality Instructions (Recommended)</span>
+                        <input type="hidden" name="metadata[minimize_quality_prompt]" value="0">
+                        <input type="checkbox" name="metadata[minimize_quality_prompt]" value="1" <?= (!isset($metadata_main['minimize_quality_prompt']) || $metadata_main['minimize_quality_prompt']) ? 'checked' : '' ?>>
+                        <span class="toggle-text">On</span>
+                    </label>
+                </div>
+
+                <!-- Advanced Settings Section (Collapsible) -->
+                <div style="margin-top:16px; border:1px solid #4a4a4a; border-radius:8px; background:#252525;">
+                    <div class="collapsible-header" data-target="advanced_settings_section_main" style="padding:10px; cursor:pointer; user-select:none; font-weight:600; color:#e9efff; display:flex; justify-content:space-between; align-items:center;">
+                        <span>⚙️ Advanced Settings</span>
+                        <span class="collapse-arrow">▼</span>
+                    </div>
+                    <div id="advanced_settings_section_main" class="collapsible-content" style="padding:10px; display:none;">
+                        <label for='max_dialogue_cache_context_size_main'><span class='tip-label' data-tip='Maximum number of dialogue entries to cache in temp files. Higher = more context but larger cache files. Recommended: 93'>Max Dialogue Cache Context Size</span></label><br>
+                        <input type='number' name='metadata[max_dialogue_cache_context_size]' id='max_dialogue_cache_context_size_main' value='<?= htmlspecialchars($metadata_main['max_dialogue_cache_context_size'] ?? '93') ?>' min='0' step='1'><br>
+
+                        <label for='custom_system_instruction_main'><span class='tip-label' data-tip='Additional instruction added to the system prompt (after character bio, before dialogue history). Does NOT replace other instructions.'>Custom System Instruction</span></label><br>
+                        <textarea name='metadata[custom_system_instruction]' id='custom_system_instruction_main' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata_main['custom_system_instruction'] ?? '') ?></textarea><br>
+
+                        <label for='custom_last_instruction_main'><span class='tip-label' data-tip='Custom text inserted as second-to-last element in dialogue history (current user message is always last). Appears right before user current request.'>Custom Last Instruction</span></label><br>
+                        <textarea name='metadata[custom_last_instruction]' id='custom_last_instruction_main' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata_main['custom_last_instruction'] ?? '') ?></textarea>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1496,14 +1595,14 @@ if (typeof window.consolidation !== 'function') {
             echo "<label for='max_tokens' style='margin-top:10px; display:block;'><span class='tip-label' data-tip='" . htmlspecialchars($tipMaxTokens, ENT_QUOTES) . "'>Max Tokens</span></label>";
             echo "<input type='number' name='max_tokens' value='" . htmlspecialchars($editItem["max_tokens"] ?? "") . "' min='0' step='1'>";
             $ranges = [
-                'temperature' => ['min'=>0,'max'=>2,'step'=>0.01],
-                'presence_penalty' => ['min'=>-2,'max'=>2,'step'=>0.01],
-                'frequency_penalty' => ['min'=>-2,'max'=>2,'step'=>0.01],
-                'repetition_penalty' => ['min'=>0,'max'=>2,'step'=>0.01],
-                'top_p' => ['min'=>0,'max'=>1,'step'=>0.01],
+                'temperature' => ['min'=>0,'max'=>2,'step'=>0.0001],
+                'presence_penalty' => ['min'=>-2,'max'=>2,'step'=>0.0001],
+                'frequency_penalty' => ['min'=>-2,'max'=>2,'step'=>0.0001],
+                'repetition_penalty' => ['min'=>0,'max'=>2,'step'=>0.0001],
+                'top_p' => ['min'=>0,'max'=>1,'step'=>0.0001],
                 'top_k' => ['min'=>0,'max'=>100,'step'=>1],
-                'min_p' => ['min'=>0,'max'=>1,'step'=>0.01],
-                'top_a' => ['min'=>0,'max'=>1,'step'=>0.01],
+                'min_p' => ['min'=>0,'max'=>1,'step'=>0.0001],
+                'top_a' => ['min'=>0,'max'=>1,'step'=>0.0001],
             ];
             $displayDefaults = [
                 'temperature' => 1,
@@ -1917,9 +2016,60 @@ function llmClamp(rangeId, numberId, min, max){ const r = document.getElementByI
     modelInput.addEventListener('change', () => { clearProviderIfOpenRouter(); maybeAutofillProvider(); if (isOpen && providersCache) renderList(providersCache, providerInput.value, getRelevantProviderSlugs()); });
     modelInput.addEventListener('input', () => { clearProviderIfOpenRouter(); maybeAutofillProvider(); if (isOpen && providersCache) renderList(providersCache, providerInput.value, getRelevantProviderSlugs()); });
 })();
+
+// Collapsible section handlers for main form (must run after DOM is loaded)
+(function(){
+    const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+
+    collapsibleHeaders.forEach(header => {
+        const targetId = header.getAttribute('data-target');
+        const content = document.getElementById(targetId);
+        const arrow = header.querySelector('.collapse-arrow');
+
+        if (!content || !arrow) return;
+
+        // Restore state from localStorage
+        const storageKey = 'llm_collapse_' + targetId;
+        const isCollapsed = localStorage.getItem(storageKey) === 'true';
+
+        if (isCollapsed) {
+            content.style.display = 'none';
+            arrow.textContent = '▶';
+        } else {
+            content.style.display = 'block';
+            arrow.textContent = '▼';
+        }
+
+        // Add click handler
+        header.addEventListener('click', function() {
+            const isCurrentlyVisible = content.style.display !== 'none';
+
+            if (isCurrentlyVisible) {
+                content.style.display = 'none';
+                arrow.textContent = '▶';
+                localStorage.setItem(storageKey, 'true');
+            } else {
+                content.style.display = 'block';
+                arrow.textContent = '▼';
+                localStorage.setItem(storageKey, 'false');
+            }
+        });
+    });
+})();
 </script>
 
 <!-- list/grid moved to left pane -->
+
+<!-- Advanced: Raw Metadata JSON Editor -->
+<details class="collapsible" style="margin-top:16px;">
+    <summary style="cursor:pointer; font-weight:600; padding:8px 0; color:#e9efff;">
+        ⚙️ Advanced: Raw Metadata JSON Editor
+    </summary>
+    <div style="padding:8px 0; color:#bbb; font-size:12px; margin-bottom:8px;">
+        Edit metadata as raw JSON. Changes here will override individual fields above. Use with caution.
+    </div>
+    <div id="metadata"></div>
+</details>
 
 <?php
  // Provides a JSON editor for metadata field and form consolidation function (only needed if metadata field is present)
@@ -1927,69 +2077,7 @@ function llmClamp(rangeId, numberId, min, max){ const r = document.getElementByI
  ?>
 
 <script>
-// Extend consolidation() to merge reasoning fields into metadata
-(function(){
-    const originalConsolidation = window.consolidation;
-    window.consolidation = function() {
-        // First run the original consolidation (from metadata_json_editor.php)
-        const result = originalConsolidation ? originalConsolidation() : true;
-        if (!result) return false;
-
-        // Now merge our custom reasoning fields into metadata
-        const form = document.querySelector('form[method="POST"]');
-        if (!form || !form.metadata) return result;
-
-        try {
-            // Parse existing metadata
-            let metadata = {};
-            try {
-                const metaStr = form.metadata.value || '{}';
-                metadata = JSON.parse(metaStr);
-            } catch (_e) {
-                metadata = {};
-            }
-
-            // Collect reasoning field values (check both regular and modal IDs)
-            const toggleThinkingEl = document.getElementById('toggle_thinking') || document.getElementById('toggle_thinking_modal');
-            const thinkingTokensEl = document.getElementById('thinking_tokens') || document.getElementById('thinking_tokens_modal');
-            const effortLevelEl = document.getElementById('effort_level') || document.getElementById('effort_level_modal');
-
-            // Add toggle_thinking
-            if (toggleThinkingEl) {
-                metadata.toggle_thinking = toggleThinkingEl.checked;
-            }
-
-            // Add thinking_tokens (only if not empty)
-            if (thinkingTokensEl) {
-                const val = thinkingTokensEl.value.trim();
-                if (val !== '') {
-                    metadata.thinking_tokens = parseInt(val, 10);
-                } else {
-                    delete metadata.thinking_tokens;
-                }
-            }
-
-            // Add effort_level (only if not empty)
-            if (effortLevelEl) {
-                const val = effortLevelEl.value.trim();
-                if (val !== '') {
-                    metadata.effort_level = val;
-                } else {
-                    delete metadata.effort_level;
-                }
-            }
-
-            // Update form metadata field
-            form.metadata.value = JSON.stringify(metadata);
-        } catch (err) {
-            console.error('Error merging reasoning fields into metadata:', err);
-        }
-
-        return result;
-    };
-})();
-
-// Sync On/Off labels for the new reasoning toggle checkboxes
+// Sync On/Off labels for the reasoning toggle checkboxes
 (function(){
     const toggleIds = ['toggle_thinking', 'toggle_thinking_modal'];
     toggleIds.forEach(id => {
@@ -2001,6 +2089,184 @@ function llmClamp(rangeId, numberId, min, max){ const r = document.getElementByI
         cb.addEventListener('change', sync);
         sync(); // Initial sync
     });
+})();
+
+// EXTEND consolidation() to handle metadata fields for llm_connectors
+// This uses the v1.0.12 pattern: preserve and call original consolidation, then merge our fields
+(function(){
+    const originalConsolidation = window.consolidation;
+    window.consolidation = function() {
+        // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+        console.log('[Consolidation v1.1.32] LLM Connectors consolidation called');
+        // END DEBUG_CONSOLIDATION
+
+        // First run original consolidation (from metadata_json_editor.php if it exists)
+        // Wrap in try/catch because the original may be incompatible with llm_connectors form structure
+        let originalResult = true;
+        if (originalConsolidation) {
+            try {
+                originalResult = originalConsolidation();
+                // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+                console.log('[Consolidation v1.1.32] Original consolidation completed successfully');
+                // END DEBUG_CONSOLIDATION
+                if (!originalResult) {
+                    // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+                    console.log('[Consolidation v1.1.32] Original consolidation returned false, aborting');
+                    // END DEBUG_CONSOLIDATION
+                    return false;
+                }
+            } catch (err) {
+                // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+                console.log('[Consolidation v1.1.32] Original consolidation threw error (likely incompatible form structure), continuing:', err.message);
+                // END DEBUG_CONSOLIDATION
+                // Continue with our own consolidation even if original fails
+                originalResult = true;
+            }
+        }
+
+        // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+        console.log('[Consolidation v1.1.32] Now merging reasoning fields');
+        // END DEBUG_CONSOLIDATION
+
+        // Try BOTH regular and modal versions of toggle_thinking
+        const toggleThinkingEl = document.getElementById('toggle_thinking') || document.getElementById('toggle_thinking_modal');
+
+        if (!toggleThinkingEl) {
+            // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+            console.log('[Consolidation v1.1.32] No toggle_thinking field found, skipping reasoning field merge');
+            // END DEBUG_CONSOLIDATION
+            return originalResult;
+        }
+
+        // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+        console.log('[Consolidation v1.1.32] Found toggle_thinking field:', toggleThinkingEl.id);
+        // END DEBUG_CONSOLIDATION
+
+        // Get the form that contains the field
+        const form = toggleThinkingEl.form;
+        if (!form) {
+            // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+            console.log('[Consolidation v1.1.32] Field has no parent form, skipping');
+            // END DEBUG_CONSOLIDATION
+            return originalResult;
+        }
+
+        // Find the metadata textarea in THIS form
+        const metadataTextarea = form.querySelector('textarea[name="metadata"]');
+        if (!metadataTextarea) {
+            // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+            console.log('[Consolidation v1.1.32] No metadata textarea in form, skipping');
+            // END DEBUG_CONSOLIDATION
+            return originalResult;
+        }
+
+        try {
+            // Parse existing metadata from textarea (may have been set by original consolidation)
+            let metadata = {};
+            try {
+                const metaStr = metadataTextarea.value || '{}';
+                metadata = JSON.parse(metaStr);
+                // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+                console.log('[Consolidation v1.1.32] Starting with metadata:', metadata);
+                // END DEBUG_CONSOLIDATION
+            } catch (_e) {
+                metadata = {};
+                // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+                console.log('[Consolidation v1.1.32] Failed to parse metadata, starting fresh');
+                // END DEBUG_CONSOLIDATION
+            }
+
+            // Collect other thinking toggle fields
+            const thinkingTokensEl = document.getElementById('thinking_tokens') || document.getElementById('thinking_tokens_modal');
+            const effortLevelEl = document.getElementById('effort_level') || document.getElementById('effort_level_modal');
+
+            // Merge toggle_thinking
+            metadata.toggle_thinking = toggleThinkingEl.checked;
+            // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+            console.log('[Consolidation v1.1.32] Set toggle_thinking =', toggleThinkingEl.checked);
+            // END DEBUG_CONSOLIDATION
+
+            // Merge thinking_tokens (only if not empty)
+            if (thinkingTokensEl) {
+                const val = thinkingTokensEl.value.trim();
+                if (val !== '') {
+                    metadata.thinking_tokens = parseInt(val, 10);
+                    // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+                    console.log('[Consolidation v1.1.32] Set thinking_tokens =', parseInt(val, 10));
+                    // END DEBUG_CONSOLIDATION
+                } else {
+                    delete metadata.thinking_tokens;
+                }
+            }
+
+            // Merge effort_level (only if not empty)
+            if (effortLevelEl) {
+                const val = effortLevelEl.value.trim();
+                if (val !== '') {
+                    metadata.effort_level = val;
+                    // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+                    console.log('[Consolidation v1.1.32] Set effort_level =', val);
+                    // END DEBUG_CONSOLIDATION
+                } else {
+                    delete metadata.effort_level;
+                }
+            }
+
+            // Collect ALL OTHER metadata[...] fields (preserves v1.1.22+ features)
+            const metadataInputs = form.querySelectorAll('[name^="metadata["]');
+            metadataInputs.forEach(inp => {
+                const match = inp.name.match(/^metadata\[([^\]]+)\]$/);
+                if (!match) return;
+                const key = match[1];
+
+                // Skip the 3 thinking toggle fields we already handled
+                if (key === 'toggle_thinking' || key === 'thinking_tokens' || key === 'effort_level') return;
+
+                // Handle other metadata fields
+                if (inp.type === 'checkbox') {
+                    if (inp.checked && inp.value !== '0') {
+                        metadata[key] = inp.value === '1' || inp.value === 'true' ? true : inp.value;
+                    }
+                } else if (inp.type === 'number') {
+                    const val = inp.value.trim();
+                    if (val !== '') {
+                        metadata[key] = parseFloat(val);
+                    }
+                } else if (inp.tagName.toLowerCase() === 'select' || inp.type === 'text' || inp.tagName.toLowerCase() === 'textarea') {
+                    const val = inp.value.trim();
+                    if (val !== '') {
+                        metadata[key] = val;
+                    }
+                }
+            });
+
+            // Update metadata textarea with final merged JSON
+            metadataTextarea.value = JSON.stringify(metadata);
+            // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+            console.log('[Consolidation v1.1.32] Final metadata JSON:', metadataTextarea.value);
+            // END DEBUG_CONSOLIDATION
+
+            // CRITICAL: Remove name attributes from all metadata[...] fields
+            // so only the textarea submits to PHP (prevents duplicate/conflicting POST data)
+            let removedCount = 0;
+            metadataInputs.forEach(inp => {
+                if (inp.name && inp.name.startsWith('metadata[')) {
+                    inp.removeAttribute('name');
+                    removedCount++;
+                }
+            });
+            // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+            console.log('[Consolidation v1.1.32] Removed', removedCount, 'name attributes');
+            // END DEBUG_CONSOLIDATION
+
+            return true;
+        } catch (err) {
+            // DEBUG_CONSOLIDATION: Remove this block to disable consolidation debugging
+            console.error('[Consolidation v1.1.32] ERROR:', err);
+            // END DEBUG_CONSOLIDATION
+            return false; // Prevent submission on error to avoid saving corrupted data
+        }
+    };
 })();
 </script>
 

@@ -1,65 +1,167 @@
-CACHED CONNECTOR TESTING PACKAGE
-=================================
+# CHIM Cached Connector v1.1.32 - Complete File List
 
-FILE: CHIM_Cached_Connector_Testing.zip
-SIZE: 50 KB (compressed from 257 KB)
-LOCATION: /home/user/HerikaServer/CHIM_Cached_Connector_Testing.zip
-VERSION: 1.0 (Updated with backup warnings and compatibility notes)
+**Version:** 1.1.32 PRODUCTION
+**Date:** 2025-11-15
+**Fix Applied:** Wrapped original consolidation in try/catch for compatibility
 
-CONTENTS:
----------
-✓ INSTALLATION_INSTRUCTIONS.txt          (Comprehensive setup guide)
-✓ connector/openrouterjsoncached.php     (Base connector)
-✓ connector/openrouterjsoncached_helpers.php   (Helper functions)
-✓ connector/openrouterjsoncached_verbose.php   (Verbose logging version - RECOMMENDED)
-✓ conf/conf_schema.json                  (Configuration schema)
-✓ lib/core/llm_connector.class.php       (Integration code)
+---
 
-COMPATIBILITY:
---------------
-✓ TESTED ON: CHIM 2.0.3
-✓ LIKELY COMPATIBLE: CHIM 2.0.1, 2.0.2
-✓ POSSIBLY COMPATIBLE: CHIM 2.0.0 (untested)
+## Package Contents
 
-Uses CHIM 2.0 database-driven profile system.
-Only ADDS new files, doesn't modify existing connectors.
+This package contains ALL files necessary for the CHIM Cached Connector implementation to function properly, including the critical fix for the thinking toggle save issue.
 
-QUICK START:
-------------
-1. **BACKUP THESE FILES FIRST!**
-   - conf/conf_schema.json
-   - lib/core/llm_connector.class.php
+### Core Connector Files
 
-2. Extract zip to HerikaServer root directory
+1. **connector/openrouterjsoncached.php**
+   - Main cached connector implementation
+   - Handles API requests with prompt caching support
+   - Includes reasoning/thinking toggle support
+   - Size: ~71KB
 
-3. Refresh browser (NO SERVER RESTART NEEDED!)
+2. **connector/openrouterjsoncached_verbose.php**
+   - Verbose logging version for debugging
+   - Same functionality as main connector with detailed logs
+   - Size: ~99KB
 
-4. Select "openrouterjsoncached_verbose" in WebUI
+3. **connector/openrouterjsoncached_helpers.php**
+   - Helper functions for cached connectors
+   - Shared utilities and common operations
+   - Size: ~20KB
 
-5. Configure and test
+4. **connector/__jpd.php**
+   - JSON processing and data handling utilities
+   - Size: ~13KB
 
-RECOMMENDED FOR TESTERS:
-------------------------
-Use openrouterjsoncached_verbose.php first!
-- Has verbose_logging enabled by default
-- Shows [CACHE-VERBOSE] logs for debugging
-- Helps track cache performance
+5. **connector/OPENROUTERJSONCACHED_README.md**
+   - Comprehensive documentation for cached connectors
+   - Configuration guide and usage instructions
 
-WHAT THIS PROVIDES:
--------------------
-✓ Multi-provider caching (Anthropic, OpenAI, Gemini)
-✓ JSON and Simple response formats
-✓ Comprehensive verbose logging
-✓ Cache performance metrics
-✓ Compatible with CHIM 2.0.x versions
+### Configuration Files
 
-ROLLBACK:
----------
-If issues occur:
-1. Restore backed-up conf_schema.json and llm_connector.class.php
-2. Delete the 3 new connector files
-3. Refresh browser
+6. **conf/conf_schema.json**
+   - Configuration schema for all settings
+   - Includes metadata field definitions
 
-SUPPORT:
---------
-GitHub: https://github.com/Unknwn-Prson/HerikaServer/tree/aiagent
+### Core Library Files
+
+7. **lib/core/llm_connector.class.php**
+   - LLM Connector class for database operations
+   - Handles create, update, read, delete operations
+   - Includes metadata JSON encoding/decoding
+
+8. **lib/chat_helper_functions.php**
+   - CRITICAL: Contains reasoning token filtering functions
+   - stripReasoningTokens(), hasUnclosedReasoningMarker(), etc.
+
+9. **lib/data_functions.php**
+   - Core data processing functions
+   - Includes streaming loop with reasoning extraction
+
+10. **lib/tokenizer_helper_functions.php**
+    - Tokenizer utilities and helpers
+
+### User Interface Files
+
+11. **ui/core/llm_connectors.php** (FIXED)
+    - Main LLM connectors management interface
+    - Now includes hidden metadata textarea
+    - Includes JSON editor container div
+    - Thinking toggle settings properly save
+
+12. **ui/core/core_profiles.php**
+    - Core profiles management interface
+    - Includes metadata editor integration
+
+13. **ui/core/tmpl/metadata_json_editor.php** (FIXED)
+    - Metadata JSON editor and consolidation function
+    - Debugger statement removed
+    - Handles metadata consolidation
+
+14. **ui/quickstart.php**
+    - Quick start configuration wizard
+
+15. **ui/conf_wizard.php**
+    - Full configuration wizard interface
+
+16. **ui/conf_wizardbackup.php**
+    - Configuration wizard backup/restore
+
+17. **ui/events-memories.php**
+    - Events and memories management
+
+### Functions
+
+18. **functions/json_response.php**
+    - JSON response formatting and handling
+
+### Prompts
+
+19. **prompts/dialogue_prompt.php**
+    - Dialogue prompt template
+
+### Documentation Files
+
+20. **CHANGELOG.txt**
+    - Version history and changes
+
+21. **INSTALLATION_INSTRUCTIONS.txt**
+    - Step-by-step installation guide
+
+22. **THINKING_TOGGLE_DOCUMENTATION.md** (NEW)
+    - Complete system documentation for thinking toggle settings
+
+23. **THINKING_TOGGLE_BUG_REPORT.md** (NEW)
+    - Detailed bug analysis and fix documentation
+
+24. **ZIP_FILE_INFO.txt**
+    - This file
+
+---
+
+## Critical Files for v1.1.23 Fix
+
+### Modified Files:
+
+1. **ui/core/llm_connectors.php** (Lines 272, 2088-2178)
+   - Added: <textarea name="metadata" style="display:none">
+   - Added: JSON editor container div
+   - Added: Hybrid consolidation wrapper using v1.0.12 approach for thinking toggles
+   - Fix: Thinking toggle fields handled by ID (toggle_thinking, thinking_tokens, effort_level)
+   - Fix: All other metadata fields (provider_caching, response_format, etc.) still work
+
+2. **ui/core/tmpl/metadata_json_editor.php** (Line 396)
+   - Removed: debugger; statement
+   - Fix: Prevents execution pause
+
+---
+
+## Installation Instructions
+
+IMPORTANT: Always backup before installing!
+
+1. Backup your CHIM server directory
+2. Extract zip to CHIM server root
+3. Verify critical files were updated
+4. Test thinking toggle functionality
+5. Clear browser cache
+
+---
+
+## Version Information
+
+Package Version: 1.1.32 PRODUCTION
+Created: 2025-11-15
+Branch: claude/1.1.22-testing-01SD3JLwpdiGRsLvnUEQ9JEY
+Status: Production Ready
+
+Critical Fix:
+- toggle_thinking save issue FINALLY FIXED (compatibility fix applied)
+- v1.1.31: Restored v1.0.12 extend pattern (preserve original consolidation)
+- v1.1.32: Wrapped original consolidation in try/catch for compatibility
+- Issue: Original consolidation from metadata_json_editor.php fails on llm_connectors forms
+- Solution: Catch errors from incompatible consolidation, continue with our logic
+- Now works regardless of script load order OR form structure compatibility
+- All v1.1.22+ features preserved (metadata field collection, etc.)
+- Debug logging added with clear markers (search DEBUG_CONSOLIDATION to remove)
+- Error handling prevents corrupted saves
+
