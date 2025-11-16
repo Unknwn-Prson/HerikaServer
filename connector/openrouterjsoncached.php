@@ -9,7 +9,7 @@ require_once($enginePath . "lib" .DIRECTORY_SEPARATOR."tokenizer_helper_function
 class openrouterjsoncached
 {
     // ⚠️ IMPORTANT: Please update version number, date, and CHIM version after making changes
-    const VERSION = 'OpenRouter Cache Connector v1.2.2 for CHIM 2.0.3 | 2025/11/16';
+    const VERSION = 'OpenRouter Cache Connector v1.2.3 for CHIM 2.0.3 | 2025/11/16';
 
     public $primary_handler;
     public $name;
@@ -374,6 +374,12 @@ class openrouterjsoncached
         // Build actions and response format instruction
         if (isset($GLOBALS["PATCH_PROMPT_ENFORCE_ACTIONS"]) && $GLOBALS["PATCH_PROMPT_ENFORCE_ACTIONS"]) {
             $prefix = isset($GLOBALS["COMMAND_PROMPT_ENFORCE_ACTIONS"]) ? "{$GLOBALS["COMMAND_PROMPT_ENFORCE_ACTIONS"]}" : "";
+
+            // Filter out unwanted phrases that should not be in action enforcement prompts
+            if (stripos($prefix, 'Provide variety') !== false) {
+                error_log("[{$this->name}] INFO: Filtering out 'Provide variety' phrase from COMMAND_PROMPT_ENFORCE_ACTIONS");
+                $prefix = "";
+            }
         } else {
             $prefix = "";
         }
