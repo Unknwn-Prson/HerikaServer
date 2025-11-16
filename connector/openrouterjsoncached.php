@@ -9,7 +9,7 @@ require_once($enginePath . "lib" .DIRECTORY_SEPARATOR."tokenizer_helper_function
 class openrouterjsoncached
 {
     // ⚠️ IMPORTANT: Please update version number, date, and CHIM version after making changes
-    const VERSION = 'OpenRouter Cache Connector v1.2.3 for CHIM 2.0.3 | 2025/11/16';
+    const VERSION = 'OpenRouter Cache Connector v1.3.1 for CHIM 2.0.3 | 2025/11/16';
 
     public $primary_handler;
     public $name;
@@ -348,23 +348,28 @@ class openrouterjsoncached
             ? (bool)$GLOBALS["CONNECTOR"][$this->name]["include_listener_requirement"]
             : true;
 
+        // Minimize quality prompt setting (defaults to true for advanced models)
+        $minimizeQualityPrompt = isset($GLOBALS["CONNECTOR"][$this->name]["minimize_quality_prompt"])
+            ? (bool)$GLOBALS["CONNECTOR"][$this->name]["minimize_quality_prompt"]
+            : true;
+
         // Enforce dependency: target required if actions enabled
         if ($this->_includeActions) {
             $this->_includeTarget = true;
         }
 
-        logMessage("Response Format Config: format={$this->_responseFormat}, actions={$this->_includeActions}, mood={$this->_includeMood}, target={$this->_includeTarget}, listener={$this->_includeListener}, uncached={$dialogue_cache_uncached_count}");
+        logMessage("Response Format Config: format={$this->_responseFormat}, actions={$this->_includeActions}, mood={$this->_includeMood}, target={$this->_includeTarget}, listener={$this->_includeListener}, uncached={$dialogue_cache_uncached_count}, minimizeQuality={$minimizeQualityPrompt}");
 
         // Continue to Part 2...
         return $this->_openPart2($contextData, $customParms, $herikaName, $MAX_TOKENS, $max_dialogue_cache_size,
                                   $customInstruction, $lastCustomInstruction, $toggleThinking, $thinkingTokens,
-                                  $effort_level, $CONTEXTHISTORY, $dialogue_cache_uncached_count, $start_time);
+                                  $effort_level, $CONTEXTHISTORY, $dialogue_cache_uncached_count, $start_time, $minimizeQualityPrompt);
     }
 
     // Part 2: System Prompt Processing with Caching
     private function _openPart2($contextData, $customParms, $herikaName, $MAX_TOKENS, $max_dialogue_cache_size,
                                  $customInstruction, $lastCustomInstruction, $toggleThinking, $thinkingTokens,
-                                 $effort_level, $CONTEXTHISTORY, $dialogue_cache_uncached_count, $start_time) {
+                                 $effort_level, $CONTEXTHISTORY, $dialogue_cache_uncached_count, $start_time, $minimizeQualityPrompt = true) {
 
         // BUG#2 FIX: Include response format in cache filename so different formats use different cache files
         $cacheSystemFile = "system_cache_{$this->_responseFormat}_{$herikaName}.tmp";
@@ -375,9 +380,10 @@ class openrouterjsoncached
         if (isset($GLOBALS["PATCH_PROMPT_ENFORCE_ACTIONS"]) && $GLOBALS["PATCH_PROMPT_ENFORCE_ACTIONS"]) {
             $prefix = isset($GLOBALS["COMMAND_PROMPT_ENFORCE_ACTIONS"]) ? "{$GLOBALS["COMMAND_PROMPT_ENFORCE_ACTIONS"]}" : "";
 
-            // Filter out unwanted phrases that should not be in action enforcement prompts
-            if (stripos($prefix, 'Provide variety') !== false) {
-                error_log("[{$this->name}] INFO: Filtering out 'Provide variety' phrase from COMMAND_PROMPT_ENFORCE_ACTIONS");
+            // When minimize_quality_prompt is enabled (true/default), filter out quality instruction phrases
+            // that conflict with the minimized approach (COMMAND_PROMPT_ENFORCE_ACTIONS should be for actions, not quality)
+            if ($minimizeQualityPrompt && stripos($prefix, 'Provide variety') !== false) {
+                error_log("[{$this->name}] INFO: Filtering out 'Provide variety' phrase from COMMAND_PROMPT_ENFORCE_ACTIONS (minimize_quality_prompt is enabled)");
                 $prefix = "";
             }
         } else {
