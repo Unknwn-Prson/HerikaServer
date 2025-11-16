@@ -1,0 +1,89 @@
+CHIM Cached Connector v1.2.4 - Release Notes
+============================================
+Release Date: 2025-11-16
+Compatible with: CHIM 2.0.3
+
+OVERVIEW
+--------
+v1.2.4 adds comprehensive debug logging to help identify and troubleshoot issues
+with the minimize_quality_prompt implementation and trace the source of any
+unexpected text in the context sent to the LLM.
+
+CHANGES FROM v1.2.3
+-------------------
+
+1. COMPREHENSIVE DEBUG LOGGING ADDED
+   - Added detailed logging when building simple format instructions
+   - Logs all components: $prefix, $speechReinforcement, $customInstruction
+   - Logs final $formatInstruction value
+   - Logs minimize_quality_prompt setting value
+
+2. FORMAT INSTRUCTION APPENDING LOGGING
+   - Logs user message BEFORE appending format instruction
+   - Logs the format instruction being added
+   - Logs user message AFTER appending
+
+3. FINAL PAYLOAD INSPECTION
+   - Searches entire final payload for specific phrases
+   - If "Provide variety in your responses" is found, logs:
+     * Which message index contains it
+     * The full text of that message
+   - Helps identify source of unexpected text
+
+4. ERROR LOG OUTPUT
+   - All debug output goes to PHP error log
+   - Clearly labeled with connector name
+   - Easy to grep/search for specific issues
+
+TECHNICAL DETAILS
+-----------------
+
+Modified Files:
+- connector/openrouterjsoncached.php
+  * Added debug logging lines 432-449 (simple format building)
+  * Added debug logging lines 568-574 (format instruction appending)
+  * Added debug logging lines 792-810 (final payload inspection)
+  * Updated VERSION to v1.2.4
+
+- ui/core/llm_connectors.php
+  * Updated version display to v1.2.4 (lines 410, 1443)
+
+DEBUG LOG LOCATIONS
+-------------------
+
+Logs will appear in your PHP error log with prefixes like:
+- [openrouterjsoncached] DEBUG - Building Simple Format Instruction
+- [openrouterjsoncached] DEBUG - Appending format instruction to user message
+- [openrouterjsoncached] ===== FINAL PAYLOAD DEBUG =====
+- [openrouterjsoncached] *** FOUND 'Provide variety' PHRASE IN THIS MESSAGE ***
+
+USAGE NOTES
+-----------
+
+This version is designed for troubleshooting. The debug logging can be removed
+once the source of any issues is identified. To use:
+
+1. Install v1.2.4 files
+2. Delete cache files (*.tmp)
+3. Run test conversation
+4. Check PHP error log for debug output
+5. Share relevant logs for analysis
+
+UPGRADE NOTES
+-------------
+
+Users upgrading from v1.2.3:
+- All v1.2.3 functionality remains unchanged
+- Only adds debug logging
+- No configuration changes needed
+- Safe to upgrade for troubleshooting
+
+COMPATIBILITY
+-------------
+
+✓ Works with CHIM 2.0.3
+✓ Compatible with all v1.2.3 configurations
+✓ Maintains backward compatibility with v1.2.0, v1.2.1, v1.2.2, v1.2.3
+
+For complete feature list and installation instructions, see INSTALLATION_INSTRUCTIONS.txt
+For detailed development history, see CLAUDE_changelog.md
