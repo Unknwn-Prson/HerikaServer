@@ -310,10 +310,6 @@ class openrouterjsoncached
         $thinkingTokens = isset($GLOBALS["CONNECTOR"][$this->name]["thinking_tokens"]) ? $GLOBALS["CONNECTOR"][$this->name]["thinking_tokens"] : 1000;
         $effort_level = isset($GLOBALS["CONNECTOR"][$this->name]["effort_level"]) ? $GLOBALS["CONNECTOR"][$this->name]["effort_level"] : "low";
 
-        // Get minimize_quality_prompt setting (default: true for minimized prompts)
-        $minimizeQualityPrompt = isset($GLOBALS["CONNECTOR"][$this->name]["minimize_quality_prompt"]) ? (bool)$GLOBALS["CONNECTOR"][$this->name]["minimize_quality_prompt"] : true;
-        logMessage("[{$this->name}] minimize_quality_prompt setting: " . ($minimizeQualityPrompt ? 'true (minimized)' : 'false (full quality instructions)'));
-
         // Cache provider configuration
         $this->_provider_caching = isset($GLOBALS["CONNECTOR"][$this->name]["provider_caching"]) ? $GLOBALS["CONNECTOR"][$this->name]["provider_caching"] : "Anthropic";
         logMessage("provider caching: {$this->_provider_caching}");
@@ -362,13 +358,13 @@ class openrouterjsoncached
         // Continue to Part 2...
         return $this->_openPart2($contextData, $customParms, $herikaName, $MAX_TOKENS, $max_dialogue_cache_size,
                                   $customInstruction, $lastCustomInstruction, $toggleThinking, $thinkingTokens,
-                                  $effort_level, $CONTEXTHISTORY, $dialogue_cache_uncached_count, $start_time, $minimizeQualityPrompt);
+                                  $effort_level, $CONTEXTHISTORY, $dialogue_cache_uncached_count, $start_time);
     }
 
     // Part 2: System Prompt Processing with Caching
     private function _openPart2($contextData, $customParms, $herikaName, $MAX_TOKENS, $max_dialogue_cache_size,
                                  $customInstruction, $lastCustomInstruction, $toggleThinking, $thinkingTokens,
-                                 $effort_level, $CONTEXTHISTORY, $dialogue_cache_uncached_count, $start_time, $minimizeQualityPrompt = true) {
+                                 $effort_level, $CONTEXTHISTORY, $dialogue_cache_uncached_count, $start_time) {
 
         // BUG#2 FIX: Include response format in cache filename so different formats use different cache files
         $cacheSystemFile = "system_cache_{$this->_responseFormat}_{$herikaName}.tmp";
@@ -426,8 +422,7 @@ class openrouterjsoncached
                 $this->_includeListener,
                 $this->_includeActions,
                 $this->_includeTarget,
-                $prefixPart,
-                $minimizeQualityPrompt
+                $prefixPart
             );
             error_log("[{$this->name}] CRITICAL DEBUG - Simple format instruction created");
         }

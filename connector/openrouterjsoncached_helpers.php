@@ -472,7 +472,7 @@ function getLastUserMessageSpeaker($contextData) {
 /**
  * Build simple format instruction based on enabled features
  */
-function buildSimpleFormatInstruction($includeMood, $includeListener, $includeActions, $includeTarget, $customInstruction = '', $minimizeQualityPrompt = true) {
+function buildSimpleFormatInstruction($includeMood, $includeListener, $includeActions, $includeTarget, $customInstruction = '') {
     $parts = [];
 
     if ($includeMood) $parts[] = 'mood';
@@ -508,18 +508,6 @@ function buildSimpleFormatInstruction($includeMood, $includeListener, $includeAc
 
     $exampleFormat = '(' . implode(')(', $exampleParts) . ')';
     $instruction .= "Example: {$exampleFormat} I'm worried about that cave we passed.";
-
-    // Add quality instructions when minimize_quality_prompt is disabled
-    if (!$minimizeQualityPrompt) {
-        $instruction .= " Provide variety in your responses, avoid repeating the same phrases while still being consistent with the character and maintaining scene continuity.";
-        if (function_exists('logMessage')) {
-            logMessage("[buildSimpleFormatInstruction] Quality instructions ADDED (minimize_quality_prompt is disabled)");
-        }
-    } else {
-        if (function_exists('logMessage')) {
-            logMessage("[buildSimpleFormatInstruction] Quality instructions NOT added (minimize_quality_prompt is enabled/default)");
-        }
-    }
 
     // Prepend custom instruction (if provided) to match JSON format behavior
     if (!empty($customInstruction)) {
