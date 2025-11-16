@@ -27,23 +27,6 @@ $webRoot = rtrim($webRoot, '/');
 
 require_once(__DIR__.DIRECTORY_SEPARATOR."../profile_loader.php");
 $GLOBALS["db"] = $GLOBALS["db"] ?? null;
-
-// Load connector version information
-$cachedConnectorVersion = '';
-$cachedConnectorVersionVerbose = '';
-if (file_exists($enginePath . 'connector/openrouterjsoncached.php')) {
-    require_once($enginePath . 'connector/openrouterjsoncached.php');
-    if (class_exists('openrouterjsoncached')) {
-        $cachedConnectorVersion = defined('openrouterjsoncached::VERSION') ? openrouterjsoncached::VERSION : '';
-    }
-}
-if (file_exists($enginePath . 'connector/openrouterjsoncached_verbose.php')) {
-    require_once($enginePath . 'connector/openrouterjsoncached_verbose.php');
-    if (class_exists('openrouterjsoncached_verbose')) {
-        $cachedConnectorVersionVerbose = defined('openrouterjsoncached_verbose::VERSION') ? openrouterjsoncached_verbose::VERSION : '';
-    }
-}
-
 // Early Export CSV handler (must run before any output)
 if (isset($_GET["export"])) {
     if (!$GLOBALS["db"]) { $GLOBALS["db"] = new sql(); }
@@ -365,22 +348,23 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                     $tmpMeta = json_decode($editItem["metadata"], true);
                     if (is_array($tmpMeta)) $metadataArr = $tmpMeta;
                 }
-                $toggleThinking = isset($metadataArr["toggle_thinking"]) && ($metadataArr["toggle_thinking"] === true || $metadataArr["toggle_thinking"] === 'true' || $metadataArr["toggle_thinking"] === 1);
+                // Use same pattern as other checkboxes for proper boolean/string/int handling
+                $toggleThinking = isset($metadataArr["toggle_thinking"]) && $metadataArr["toggle_thinking"];
                 $thinkingTokens = $metadataArr["thinking_tokens"] ?? '';
                 $effortLevel = $metadataArr["effort_level"] ?? '';
                 ?>
                 <div id="reasoning_details" style="margin-top:8px; margin-left:20px; padding:8px; border-left:2px solid #444;">
                     <label class="label-with-toggle"><span class='tip-label' data-tip='Enable thinking/reasoning for supported models (like o1, DeepSeek-R1). Shows model internal reasoning process.'>Toggle Thinking</span>
-                        <input type="hidden" id="toggle_thinking_hidden" value="false">
-                        <input type="checkbox" id="toggle_thinking" value="true" <?= $toggleThinking ? "checked" : "" ?>>
+                        <input type="hidden" name="metadata[toggle_thinking]" value="0">
+                        <input type="checkbox" id="toggle_thinking" name="metadata[toggle_thinking]" value="1" <?= $toggleThinking ? "checked" : "" ?>>
                         <span class="toggle-text">On</span>
                     </label>
                     <div style="height:6px;"></div>
                     <label for='thinking_tokens'><span class='tip-label' data-tip='Maximum tokens for thinking/reasoning output (Anthropic/Gemini only). OpenAI uses effort_level instead. Leave empty to use default.'>Thinking Tokens</span></label>
-                    <input type="number" id="thinking_tokens" value="<?= htmlspecialchars($thinkingTokens) ?>" min="0" step="1" placeholder="Optional">
+                    <input type="number" id="thinking_tokens" name="metadata[thinking_tokens]" value="<?= htmlspecialchars($thinkingTokens) ?>" min="0" step="1" placeholder="Optional">
                     <div style="height:6px;"></div>
                     <label for='effort_level'><span class='tip-label' data-tip='Reasoning effort level for OpenAI reasoning models (o1, o3, o4, gpt-5). minimal=Quick (gpt-5+), low=Basic, medium=Balanced, high=Thorough. Leave empty for default.'>Effort Level</span></label>
-                    <select id="effort_level">
+                    <select id="effort_level" name="metadata[effort_level]">
                         <option value="">-- select --</option>
                         <option value="minimal" <?= $effortLevel === 'minimal' ? 'selected' : '' ?>>Minimal</option>
                         <option value="low" <?= $effortLevel === 'low' ? 'selected' : '' ?>>Low</option>
@@ -422,8 +406,8 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
 
                 <!-- Caching Settings (shown only for cached connectors) -->
                 <div id="caching_settings" style="display:none; margin-top:16px; padding:12px; border:1px solid #4a4a4a; border-radius:8px; background:#1a1a1a;">
-                    <div style="font-weight:600; color:#e9efff; margin-bottom:12px;">🔄 Caching Settings</div>
-                    <div id="connector_version" style="font-size:0.85em; color:#999; margin-bottom:12px; font-style:italic;"></div>
+                    <div style="font-weight:600; color:#e9efff; margin-bottom:4px;">🔄 Caching Settings</div>
+                    <div style="font-size:11px; color:#888; margin-bottom:12px;">OpenRouter Cache Connector v1.2.2</div>
 
                     <label for='provider_caching'>Provider Caching Type</label><br>
                     <select name="metadata[provider_caching]" id="provider_caching">
@@ -476,6 +460,21 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                             <span class="toggle-text">On</span>
                         </label>
                     </div>
+
+                    <div style="margin-top:12px;">
+                        <label for='max_dialogue_cache_context_size'><span class='tip-label' data-tip='Maximum number of dialogue entries to cache in temp files. Higher = more context but larger cache files. Recommended: 93'>Max Dialogue Cache Context Size</span></label><br>
+                        <input type='number' name='metadata[max_dialogue_cache_context_size]' id='max_dialogue_cache_context_size' value='<?= htmlspecialchars($metadata['max_dialogue_cache_context_size'] ?? '93') ?>' min='0' step='1'>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label for='custom_system_instruction'><span class='tip-label' data-tip='Additional instruction added to the system prompt (after character bio, before dialogue history). Does NOT replace other instructions.'>Custom System Instruction</span></label><br>
+                        <textarea name='metadata[custom_system_instruction]' id='custom_system_instruction' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata['custom_system_instruction'] ?? '') ?></textarea>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label for='custom_last_instruction'><span class='tip-label' data-tip='Custom text inserted as second-to-last element in dialogue history (current user message is always last). Appears right before user current request.'>Custom Last Instruction</span></label><br>
+                        <textarea name='metadata[custom_last_instruction]' id='custom_last_instruction' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata['custom_last_instruction'] ?? '') ?></textarea>
+                    </div>
                 </div>
             </div>
             <div>
@@ -484,14 +483,14 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                 echo "<label for='max_tokens' style='margin-top:10px; display:block;'><span class='tip-label' data-tip='" . htmlspecialchars($tipMaxTokens, ENT_QUOTES) . "'>Max Tokens</span></label>";
                 echo "<input type='number' name='max_tokens' value='" . htmlspecialchars($editItem["max_tokens"] ?? "") . "' min='0' step='1'>";
                 $ranges = [
-                    'temperature' => ['min'=>0,'max'=>2,'step'=>0.01],
-                    'presence_penalty' => ['min'=>-2,'max'=>2,'step'=>0.01],
-                    'frequency_penalty' => ['min'=>-2,'max'=>2,'step'=>0.01],
-                    'repetition_penalty' => ['min'=>0,'max'=>2,'step'=>0.01],
-                    'top_p' => ['min'=>0,'max'=>1,'step'=>0.01],
+                    'temperature' => ['min'=>0,'max'=>2,'step'=>0.0001],
+                    'presence_penalty' => ['min'=>-2,'max'=>2,'step'=>0.0001],
+                    'frequency_penalty' => ['min'=>-2,'max'=>2,'step'=>0.0001],
+                    'repetition_penalty' => ['min'=>0,'max'=>2,'step'=>0.0001],
+                    'top_p' => ['min'=>0,'max'=>1,'step'=>0.0001],
                     'top_k' => ['min'=>0,'max'=>100,'step'=>1],
-                    'min_p' => ['min'=>0,'max'=>1,'step'=>0.01],
-                    'top_a' => ['min'=>0,'max'=>1,'step'=>0.01],
+                    'min_p' => ['min'=>0,'max'=>1,'step'=>0.0001],
+                    'top_a' => ['min'=>0,'max'=>1,'step'=>0.0001],
                 ];
                 $displayDefaults = [
                     'temperature' => 1,
@@ -682,18 +681,6 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
             // Show caching settings only for cached drivers
             const isCachedDriver = driver === 'openrouterjsoncached' || driver === 'openrouterjsoncached_verbose';
             if (cachingSettings) cachingSettings.style.display = isCachedDriver ? '' : 'none';
-
-            // Update connector version display
-            const versionDiv = document.getElementById('connector_version');
-            if (versionDiv) {
-                if (driver === 'openrouterjsoncached') {
-                    versionDiv.textContent = <?= json_encode($cachedConnectorVersion) ?>;
-                } else if (driver === 'openrouterjsoncached_verbose') {
-                    versionDiv.textContent = <?= json_encode($cachedConnectorVersionVerbose) ?>;
-                } else {
-                    versionDiv.textContent = '';
-                }
-            }
 
             // Show verbose logging option only for verbose driver
             if (verboseLoggingOption) verboseLoggingOption.style.display = (driver === 'openrouterjsoncached_verbose') ? '' : 'none';
@@ -1282,6 +1269,17 @@ if (typeof window.consolidation !== 'function') {
     window.consolidation = function(){ return true; };
 }
 </script>
+<?php
+// Parse metadata for main editor form (same as partial editor)
+$metadataArr = [];
+if (isset($editItem["metadata"]) && !empty($editItem["metadata"])) {
+    $tmpMeta = json_decode($editItem["metadata"], true);
+    if (is_array($tmpMeta)) $metadataArr = $tmpMeta;
+}
+$toggleThinking = isset($metadataArr["toggle_thinking"]) && $metadataArr["toggle_thinking"];
+$thinkingTokens = $metadataArr["thinking_tokens"] ?? '';
+$effortLevel = $metadataArr["effort_level"] ?? '';
+?>
 <form method="post" onsubmit='return consolidation()' style='<?= $editItem!=null?"":"display:none"?>'>
     <?php if ($editItem): ?>
         <input type="hidden" name="id" value="<?= $editItem["id"] ?>">
@@ -1388,16 +1386,16 @@ if (typeof window.consolidation !== 'function') {
             </div>
             <div id="reasoning_details_modal" style="margin-top:8px; padding:8px; border-left:2px solid #444;">
                 <label class="label-with-toggle"><span class='tip-label' data-tip='Enable thinking/reasoning for supported models (like o1, DeepSeek-R1). Shows model internal reasoning process.'>Toggle Thinking</span>
-                    <input type="hidden" id="toggle_thinking_hidden_modal" value="false">
-                    <input type="checkbox" id="toggle_thinking_modal" value="true" <?= $toggleThinking ? "checked" : "" ?>>
+                    <input type="hidden" name="metadata[toggle_thinking]" value="0">
+                    <input type="checkbox" id="toggle_thinking_modal" name="metadata[toggle_thinking]" value="1" <?= $toggleThinking ? "checked" : "" ?>>
                     <span class="toggle-text">On</span>
                 </label>
                 <div style="height:6px;"></div>
                 <label for='thinking_tokens_modal'><span class='tip-label' data-tip='Maximum tokens for thinking/reasoning output (Anthropic/Gemini only). OpenAI uses effort_level instead. Leave empty to use default.'>Thinking Tokens</span></label>
-                <input type="number" id="thinking_tokens_modal" value="<?= htmlspecialchars($thinkingTokens) ?>" min="0" step="1" placeholder="Optional">
+                <input type="number" id="thinking_tokens_modal" name="metadata[thinking_tokens]" value="<?= htmlspecialchars($thinkingTokens) ?>" min="0" step="1" placeholder="Optional">
                 <div style="height:6px;"></div>
                 <label for='effort_level_modal'><span class='tip-label' data-tip='Reasoning effort level for OpenAI reasoning models (o1, o3, o4, gpt-5). minimal=Quick (gpt-5+), low=Basic, medium=Balanced, high=Thorough. Leave empty for default.'>Effort Level</span></label>
-                <select id="effort_level_modal">
+                <select id="effort_level_modal" name="metadata[effort_level]">
                     <option value="">-- select --</option>
                     <option value="minimal" <?= $effortLevel === 'minimal' ? 'selected' : '' ?>>Minimal</option>
                     <option value="low" <?= $effortLevel === 'low' ? 'selected' : '' ?>>Low</option>
@@ -1441,8 +1439,8 @@ if (typeof window.consolidation !== 'function') {
 
             <!-- Caching Settings (shown only for cached connectors) - MAIN EDITOR -->
             <div id="caching_settings_main" style="display:none; margin-top:16px; padding:12px; border:1px solid #4a4a4a; border-radius:8px; background:#1a1a1a;">
-                <div style="font-weight:600; color:#e9efff; margin-bottom:12px;">🔄 Caching Settings</div>
-                <div id="connector_version_main" style="font-size:0.85em; color:#999; margin-bottom:12px; font-style:italic;"></div>
+                <div style="font-weight:600; color:#e9efff; margin-bottom:4px;">🔄 Caching Settings</div>
+                <div style="font-size:11px; color:#888; margin-bottom:12px;">OpenRouter Cache Connector v1.2.2</div>
 
                 <label for='provider_caching_main'>Provider Caching Type</label><br>
                 <select name="metadata[provider_caching]" id="provider_caching_main">
@@ -1487,6 +1485,29 @@ if (typeof window.consolidation !== 'function') {
                         <span class="toggle-text">On</span>
                     </label>
                 </div>
+
+                <div style="margin-top:12px;">
+                    <label class="label-with-toggle"><span class='tip-label' data-tip='Recommended ON for advanced models (Claude 4.5, GPT-4, Gemini 2.0). Uses minimal quality instructions. Turn OFF for older/smaller models that benefit from explicit guidance.'>Minimize Quality Instructions (Recommended)</span>
+                        <input type="hidden" name="metadata[minimize_quality_prompt]" value="0">
+                        <input type="checkbox" name="metadata[minimize_quality_prompt]" value="1" <?= (!isset($metadata_main['minimize_quality_prompt']) || $metadata_main['minimize_quality_prompt']) ? 'checked' : '' ?>>
+                        <span class="toggle-text">On</span>
+                    </label>
+                </div>
+
+                <div style="margin-top:12px;">
+                    <label for='max_dialogue_cache_context_size_main'><span class='tip-label' data-tip='Maximum number of dialogue entries to cache in temp files. Higher = more context but larger cache files. Recommended: 93'>Max Dialogue Cache Context Size</span></label><br>
+                    <input type='number' name='metadata[max_dialogue_cache_context_size]' id='max_dialogue_cache_context_size_main' value='<?= htmlspecialchars($metadata_main['max_dialogue_cache_context_size'] ?? '93') ?>' min='0' step='1'>
+                </div>
+
+                <div style="margin-top:12px;">
+                    <label for='custom_system_instruction_main'><span class='tip-label' data-tip='Additional instruction added to the system prompt (after character bio, before dialogue history). Does NOT replace other instructions.'>Custom System Instruction</span></label><br>
+                    <textarea name='metadata[custom_system_instruction]' id='custom_system_instruction_main' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata_main['custom_system_instruction'] ?? '') ?></textarea>
+                </div>
+
+                <div style="margin-top:12px;">
+                    <label for='custom_last_instruction_main'><span class='tip-label' data-tip='Custom text inserted as second-to-last element in dialogue history (current user message is always last). Appears right before user current request.'>Custom Last Instruction</span></label><br>
+                    <textarea name='metadata[custom_last_instruction]' id='custom_last_instruction_main' rows='3' style='width:100%; box-sizing:border-box;'><?= htmlspecialchars($metadata_main['custom_last_instruction'] ?? '') ?></textarea>
+                </div>
             </div>
         </div>
 
@@ -1496,14 +1517,14 @@ if (typeof window.consolidation !== 'function') {
             echo "<label for='max_tokens' style='margin-top:10px; display:block;'><span class='tip-label' data-tip='" . htmlspecialchars($tipMaxTokens, ENT_QUOTES) . "'>Max Tokens</span></label>";
             echo "<input type='number' name='max_tokens' value='" . htmlspecialchars($editItem["max_tokens"] ?? "") . "' min='0' step='1'>";
             $ranges = [
-                'temperature' => ['min'=>0,'max'=>2,'step'=>0.01],
-                'presence_penalty' => ['min'=>-2,'max'=>2,'step'=>0.01],
-                'frequency_penalty' => ['min'=>-2,'max'=>2,'step'=>0.01],
-                'repetition_penalty' => ['min'=>0,'max'=>2,'step'=>0.01],
-                'top_p' => ['min'=>0,'max'=>1,'step'=>0.01],
+                'temperature' => ['min'=>0,'max'=>2,'step'=>0.0001],
+                'presence_penalty' => ['min'=>-2,'max'=>2,'step'=>0.0001],
+                'frequency_penalty' => ['min'=>-2,'max'=>2,'step'=>0.0001],
+                'repetition_penalty' => ['min'=>0,'max'=>2,'step'=>0.0001],
+                'top_p' => ['min'=>0,'max'=>1,'step'=>0.0001],
                 'top_k' => ['min'=>0,'max'=>100,'step'=>1],
-                'min_p' => ['min'=>0,'max'=>1,'step'=>0.01],
-                'top_a' => ['min'=>0,'max'=>1,'step'=>0.01],
+                'min_p' => ['min'=>0,'max'=>1,'step'=>0.0001],
+                'top_a' => ['min'=>0,'max'=>1,'step'=>0.0001],
             ];
             $displayDefaults = [
                 'temperature' => 1,
@@ -1684,18 +1705,6 @@ function updateCachingSettingsMain(){
     // Show caching settings only for cached drivers
     const isCachedDriver = driver === 'openrouterjsoncached' || driver === 'openrouterjsoncached_verbose';
     if (cachingSettings) cachingSettings.style.display = isCachedDriver ? '' : 'none';
-
-    // Update connector version display
-    const versionDiv = document.getElementById('connector_version_main');
-    if (versionDiv) {
-        if (driver === 'openrouterjsoncached') {
-            versionDiv.textContent = <?= json_encode($cachedConnectorVersion) ?>;
-        } else if (driver === 'openrouterjsoncached_verbose') {
-            versionDiv.textContent = <?= json_encode($cachedConnectorVersionVerbose) ?>;
-        } else {
-            versionDiv.textContent = '';
-        }
-    }
 
     // Show verbose logging option only for verbose driver
     if (verboseLoggingOption) verboseLoggingOption.style.display = (driver === 'openrouterjsoncached_verbose') ? '' : 'none';

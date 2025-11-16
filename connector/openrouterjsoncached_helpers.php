@@ -472,7 +472,7 @@ function getLastUserMessageSpeaker($contextData) {
 /**
  * Build simple format instruction based on enabled features
  */
-function buildSimpleFormatInstruction($includeMood, $includeListener, $includeActions, $includeTarget, $customInstruction = '') {
+function buildSimpleFormatInstruction($includeMood, $includeListener, $includeActions, $includeTarget, $customInstruction = '', $minimizeQualityPrompt = true) {
     $parts = [];
 
     if ($includeMood) $parts[] = 'mood';
@@ -481,7 +481,7 @@ function buildSimpleFormatInstruction($includeMood, $includeListener, $includeAc
     if ($includeTarget) $parts[] = 'target';
 
     if (empty($parts)) {
-        return $customInstruction . " Respond naturally with your dialogue.";
+        return $customInstruction . " Respond with your dialogue.";
     }
 
     $formatExample = '(' . implode(')(', $parts) . ')';
@@ -494,7 +494,7 @@ function buildSimpleFormatInstruction($includeMood, $includeListener, $includeAc
     if ($includeTarget) $descriptions[] = "action target";
 
     $instruction .= implode(", ", $descriptions);
-    $instruction .= " in parentheses like this: {$formatExample}, then provide your dialogue naturally. ";
+    $instruction .= " in parentheses like this: {$formatExample}, then provide your dialogue. ";
 
     if ($includeMood && isset($GLOBALS["EMOTEMOODS"]) && !empty($GLOBALS["EMOTEMOODS"])) {
         $instruction .= "Valid moods: " . $GLOBALS["EMOTEMOODS"] . ". ";
@@ -508,6 +508,11 @@ function buildSimpleFormatInstruction($includeMood, $includeListener, $includeAc
 
     $exampleFormat = '(' . implode(')(', $exampleParts) . ')';
     $instruction .= "Example: {$exampleFormat} I'm worried about that cave we passed.";
+
+    // Add quality instructions when minimize_quality_prompt is disabled
+    if (!$minimizeQualityPrompt) {
+        $instruction .= " Provide variety in your responses, avoid repeating the same phrases while still being consistent with the character and maintaining scene continuity.";
+    }
 
     // Prepend custom instruction (if provided) to match JSON format behavior
     if (!empty($customInstruction)) {
@@ -537,7 +542,7 @@ function extractSimpleFormatFromBuffer($buffer, $includeMood, $includeListener, 
         ];
     }
 
-    $groupPattern = str_repeat('\(([^)]+)\)', $groupCount);
+    $groupPattern = str_repeat('\(?([^)]+)\)', $groupCount);
     $pattern = '/^\s*' . $groupPattern . '\s*(.*)$/s';
 
     if (preg_match($pattern, $buffer, $matches)) {
@@ -547,15 +552,19 @@ function extractSimpleFormatFromBuffer($buffer, $includeMood, $includeListener, 
         }
         $message = $matches[$groupCount + 1];
 
+        // Trim whitespace first
+        $message = trim($message);
+
         $result = [
             'mood' => '',
             'listener' => '',
             'action' => 'Talk',
             'target' => '',
-            'message' => trim($message),
+            'message' => $message,
             'found' => true
         ];
 
+        // Parse metadata fields FIRST so we know what the action is
         $groupIndex = 0;
         if ($includeMood && isset($groups[$groupIndex])) {
             $result['mood'] = trim($groups[$groupIndex]);
@@ -573,6 +582,11 @@ function extractSimpleFormatFromBuffer($buffer, $includeMood, $includeListener, 
             $result['target'] = trim($groups[$groupIndex]);
             $groupIndex++;
         }
+
+        // Do NOT strip leading colons - they are intentional formatting
+        // Format: (mood)(listener)(action)(target): message or action description
+        // The leading : is part of the simple format specification
+        // Preserved in all cases regardless of action type
 
         return $result;
     }

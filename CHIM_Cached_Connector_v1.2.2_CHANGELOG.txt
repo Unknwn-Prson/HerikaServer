@@ -1,0 +1,79 @@
+CHIM Cached Connector v1.2.2 - Release Notes
+============================================
+Release Date: 2025-11-16
+Compatible with: CHIM 2.0.3
+
+OVERVIEW
+--------
+v1.2.2 is a minor update to v1.2.1 that adds quality instruction toggling for
+the simple format and improves UI visibility with version number display in
+the caching settings section.
+
+CHANGES FROM v1.2.1
+-------------------
+
+1. QUALITY INSTRUCTION TOGGLE FOR SIMPLE FORMAT
+   - The minimize_quality_prompt setting now affects simple format instructions
+   - When minimize_quality_prompt is DISABLED (unchecked):
+     * Adds quality instruction: "Provide variety in your responses, avoid
+       repeating the same phrases while still being consistent with the
+       character and maintaining scene continuity."
+   - When minimize_quality_prompt is ENABLED (checked - DEFAULT):
+     * Uses minimal instructions (recommended for advanced models)
+   - This matches the existing behavior for dialogue_prompt.php
+
+2. VERSION NUMBER DISPLAY
+   - Added version number display in Caching Settings section
+   - Shows "OpenRouter Cache Connector v1.2.2" in small gray text
+   - Appears in both partial editor and main editor forms
+   - Helps users identify which version they're using
+
+TECHNICAL DETAILS
+-----------------
+
+Modified Files:
+- connector/openrouterjsoncached.php
+  * Added minimize_quality_prompt parameter reading (line 314)
+  * Pass minimize_quality_prompt to _openPart2 (line 364)
+  * Updated _openPart2 signature to accept minimize_quality_prompt
+  * Pass minimize_quality_prompt to buildSimpleFormatInstruction (line 429)
+  * Updated VERSION constant to v1.2.2 (line 12)
+
+- connector/openrouterjsoncached_helpers.php
+  * Updated buildSimpleFormatInstruction() function signature (line 475)
+  * Added $minimizeQualityPrompt parameter (default: true)
+  * Added quality instruction when !$minimizeQualityPrompt (lines 513-515)
+
+- ui/core/llm_connectors.php
+  * Added version display in partial editor (line 410)
+  * Added version display in main editor (line 1443)
+  * Adjusted margin-bottom on heading to accommodate version text
+
+CONFIGURATION
+-------------
+
+The minimize_quality_prompt setting controls quality instructions for both:
+1. Dialogue prompts (via prompts/dialogue_prompt.php)
+2. Simple format instructions (via buildSimpleFormatInstruction)
+
+Default: ENABLED (checked) - Recommended for Claude 3.5+, GPT-4, Gemini 2.0
+Disable for: Older or smaller models that benefit from explicit quality guidance
+
+UPGRADE NOTES
+-------------
+
+Users upgrading from v1.2.1:
+- No configuration changes needed
+- Behavior change only affects simple format when minimize_quality_prompt is disabled
+- Version number now visible in UI for easy identification
+- All existing settings will continue to work as before
+
+COMPATIBILITY
+-------------
+
+✓ Works with CHIM 2.0.3
+✓ Compatible with all v1.2.1 configurations
+✓ Maintains backward compatibility with v1.2.0 and v1.2.1
+
+For complete feature list and installation instructions, see INSTALLATION_INSTRUCTIONS.txt
+For detailed development history, see CLAUDE_changelog.md
