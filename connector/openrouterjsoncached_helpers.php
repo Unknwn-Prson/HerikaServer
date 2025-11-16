@@ -509,9 +509,9 @@ function buildSimpleFormatInstruction($includeMood, $includeListener, $includeAc
     $exampleFormat = '(' . implode(')(', $exampleParts) . ')';
     $instruction .= "Example: {$exampleFormat} I'm worried about that cave we passed.";
 
-    // Add quality instructions when minimize_quality_prompt is disabled
+    // Add quality instructions when minimize_quality_prompt is disabled (matches dialogue_prompt.php behavior)
     if (!$minimizeQualityPrompt) {
-        $instruction .= " Provide variety in your responses, avoid repeating the same phrases while still being consistent with the character and maintaining scene continuity.";
+        $instruction .= " Avoid narrations, be original, creative, knowledgeable, use your own thoughts. Review dialogue history to focus on conversation topic and to avoid repeating sentences and phraseology from previous dialog lines.";
     }
 
     // Prepend custom instruction (if provided) to match JSON format behavior

@@ -416,7 +416,14 @@ class openrouterjsoncached
             }
 
             $prefixPart = trim(implode(' ', array_filter([$prefix, $speechReinforcement, $customInstruction], 'strlen')));
-            $formatInstruction = "{$prefixPart} Use ONLY this JSON object to give your answer. Do not send any other characters outside of this JSON structure$zonosTones: " . json_encode($template);
+
+            // Add quality instructions when minimize_quality_prompt is disabled (matches dialogue_prompt.php behavior)
+            $qualityInstructions = "";
+            if (!$minimizeQualityPrompt) {
+                $qualityInstructions = " Avoid narrations, be original, creative, knowledgeable, use your own thoughts. Review dialogue history to focus on conversation topic and to avoid repeating sentences and phraseology from previous dialog lines.";
+            }
+
+            $formatInstruction = "{$prefixPart}{$qualityInstructions} Use ONLY this JSON object to give your answer. Do not send any other characters outside of this JSON structure$zonosTones: " . json_encode($template);
             error_log("[{$this->name}] CRITICAL DEBUG - JSON format instruction created");
         } else {
             $prefixPart = trim(implode(' ', array_filter([$prefix, $speechReinforcement, $customInstruction], 'strlen')));
