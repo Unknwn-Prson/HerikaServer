@@ -2985,8 +2985,16 @@ function call_llm() {
 
         $buffer=strtr($buffer, array("\""=>"",".)"=>")."));
 
-        if (strlen($buffer)<MINIMUM_SENTENCE_SIZE) {	// Avoid too short buffers
-            continue;
+        // Check if connector handles sentence splitting internally (e.g., simple format)
+        // If so, bypass minimum size checks as connector already returns complete sentences
+        $connectorHandlesSentences = (method_exists($connectionHandler, 'handlesSentenceSplitting') &&
+                                       $connectionHandler->handlesSentenceSplitting());
+
+        if (!$connectorHandlesSentences) {
+            // Original logic: Apply minimum size check for formats that don't handle sentence splitting (JSON)
+            if (strlen($buffer)<MINIMUM_SENTENCE_SIZE) {	// Avoid too short buffers
+                continue;
+            }
         }
 
         // disable streaming when translating to avoid sentence fragments getting translated
@@ -2997,7 +3005,18 @@ function call_llm() {
         $position = findDotPosition($buffer);
 
         //echo "<$buffer>".PHP_EOL;
-        if (($position !== false) && ($position>MINIMUM_SENTENCE_SIZE)) {
+        // For connectors handling sentence splitting, send immediately when position found
+        // For others, apply minimum position check
+        $shouldProcess = false;
+        if ($connectorHandlesSentences) {
+            // Simple format: connector already returns complete sentences, send immediately
+            $shouldProcess = ($position !== false);
+        } else {
+            // JSON format: apply original minimum size logic
+            $shouldProcess = (($position !== false) && ($position>MINIMUM_SENTENCE_SIZE));
+        }
+
+        if ($shouldProcess) {
             $extractedData = substr($buffer, 0, $position + 1);
             $remainingData = substr($buffer, $position + 1);
             $sentences=split_sentences_stream(cleanResponse($extractedData));

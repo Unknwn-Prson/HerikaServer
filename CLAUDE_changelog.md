@@ -272,3 +272,161 @@ User: Write Lydia's next dialogue line. Begin your response by noting your emoti
 - Simple format now works correctly with thinking enabled
 - Instruction is part of the final user message, not buried in system prompt
 
+
+---
+
+## Session: 2025-11-16 - Fix Simple Format Sentence Streaming
+
+### Entry 9: Remove MINIMUM_SENTENCE_SIZE bottleneck for simple format
+**Timestamp:** 2025-11-16 18:30 UTC
+**Version:** v1.3.3
+**Files Modified:**
+- `connector/openrouterjsoncached.php` (lines 134-138, version line 12)
+- `lib/data_functions.php` (lines 2988-3019)
+- `ui/core/llm_connectors.php` (version display lines 410, 1443)
+
+**Problem Identified:**
+User reported that simple format sentences were not being sent immediately to CHIM, despite the connector properly splitting sentences. Investigation revealed a critical bottleneck in the main processing loop.
+
+**Root Cause Analysis:**
+
+The processing flow works in 3 stages:
+
+1. **Connector Level (openrouterjsoncached.php):**
+   - ✓ Streams chunks from LLM API in real-time (line 862: `fgets()`)
+   - ✓ Parses simple format and splits into sentences (lines 1377-1396)
+   - ✓ Returns ONE sentence at a time from `process()` method (line 1395)
+   - **This part works correctly!**
+
+2. **CHIM Processing Level (data_functions.php) - THE BOTTLENECK:**
+   - Calls `process()` repeatedly in loop (line 2961)
+   - Accumulates returned data into `$buffer`
+   - **BLOCKS** short buffers at line 2988-2990:
+     ```php
+     if (strlen($buffer)<MINIMUM_SENTENCE_SIZE) {  // Avoid too short buffers
+         continue;  // ← BLOCKS SENDING!
+     }
+     ```
+   - Where `MINIMUM_SENTENCE_SIZE = 75` characters (main.php:9)
+   - Also blocks at line 3000: `($position>MINIMUM_SENTENCE_SIZE)`
+
+3. **What Actually Happened:**
+   - Connector returns: `"Hello there."` (13 chars) → Buffer: 13 chars → **BLOCKED** (< 75)
+   - Connector returns: `"How are you?"` (12 chars) → Buffer: 25 chars → **BLOCKED** (< 75)
+   - Connector returns: `"I'm doing well."` (15 chars) → Buffer: 40 chars → **BLOCKED** (< 75)
+   - Connector returns: `"What brings you here?"` (21 chars) → Buffer: 61 chars → **BLOCKED** (< 75)
+   - Connector returns: `"I need your help."` (17 chars) → Buffer: 78 chars → **✓ SENT**
+   - All 5 sentences sent together once buffer reaches 75+ characters!
+
+**Why This Check Exists:**
+The MINIMUM_SENTENCE_SIZE check was designed for **JSON format**, which returns fragments/chunks that need to accumulate until forming complete sentences. Without this check, JSON format would send incomplete sentence fragments to TTS/game engine.
+
+**The Solution:**
+
+Simple format is fundamentally different - the connector already handles sentence splitting internally and returns complete sentences. The 75-character minimum is unnecessary and harmful for simple format.
+
+**Implementation:**
+
+1. **Added public method to connector** (openrouterjsoncached.php, lines 134-138):
+   ```php
+   // Public method to check if connector handles sentence splitting internally
+   // Used by data_functions.php to bypass MINIMUM_SENTENCE_SIZE check for simple format
+   public function handlesSentenceSplitting() {
+       return ($this->_responseFormat === 'simple');
+   }
+   ```
+
+2. **Modified processing loop** (data_functions.php, lines 2988-3019):
+   ```php
+   // Check if connector handles sentence splitting internally (e.g., simple format)
+   // If so, bypass minimum size checks as connector already returns complete sentences
+   $connectorHandlesSentences = (method_exists($connectionHandler, 'handlesSentenceSplitting') &&
+                                  $connectionHandler->handlesSentenceSplitting());
+
+   if (!$connectorHandlesSentences) {
+       // Original logic: Apply minimum size check for formats that don't handle sentence splitting (JSON)
+       if (strlen($buffer)<MINIMUM_SENTENCE_SIZE) {
+           continue;
+       }
+   }
+
+   // ... later in code ...
+
+   // For connectors handling sentence splitting, send immediately when position found
+   // For others, apply minimum position check
+   $shouldProcess = false;
+   if ($connectorHandlesSentences) {
+       // Simple format: connector already returns complete sentences, send immediately
+       $shouldProcess = ($position !== false);
+   } else {
+       // JSON format: apply original minimum size logic
+       $shouldProcess = (($position !== false) && ($position>MINIMUM_SENTENCE_SIZE));
+   }
+
+   if ($shouldProcess) {
+       // ... process and send sentences ...
+   }
+   ```
+
+3. **Updated version numbers:**
+   - connector/openrouterjsoncached.php: v1.3.2 → v1.3.3 (line 12)
+   - ui/core/llm_connectors.php: v1.3.2 → v1.3.3 (lines 410, 1443)
+
+**Behavior Changes:**
+
+**Before (v1.3.2):**
+- Simple format: Sentences accumulated until buffer ≥ 75 chars, then sent in batch
+- JSON format: Same behavior (correct)
+- Result: Noticeable delays in simple format responses
+
+**After (v1.3.3):**
+- Simple format: Each sentence sent **immediately** as connector returns it
+- JSON format: **Unchanged** - still uses 75-char minimum (correct)
+- Result: True streaming behavior for simple format
+
+**Safety Analysis:**
+
+✓ **JSON format unchanged:** All original checks still apply to JSON format
+✓ **Backward compatible:** Uses `method_exists()` check - won't break other connectors
+✓ **Simple format only:** Bypass only applies when `_responseFormat === 'simple'`
+✓ **Complete sentences guaranteed:** Connector's sentence splitting already verified to work correctly
+✓ **No data loss:** All sentences still processed, just sent immediately instead of batched
+
+**Edge Cases Considered:**
+
+1. **What if connector doesn't have handlesSentenceSplitting() method?**
+   - Uses `method_exists()` check, returns false, applies original logic
+   - Safe fallback to existing behavior
+
+2. **What if connector returns incomplete sentence?**
+   - Won't happen: connector's `_splitIntoSentences()` only returns complete sentences
+   - Partial sentences remain in buffer until complete
+
+3. **What if translation is enabled?**
+   - Translation check (line 3000) still applies before processing
+   - Behavior unchanged for translations
+
+4. **What if position check fails?**
+   - `findDotPosition()` must still find a sentence ending
+   - Won't send non-sentence fragments
+
+**Testing Recommendations:**
+
+1. Test simple format with various sentence lengths (< 75 chars)
+2. Verify sentences appear immediately in game
+3. Confirm JSON format still works correctly (should be unchanged)
+4. Test with translation enabled/disabled
+5. Test with thinking/reasoning enabled
+
+**Conceptual Goal:**
+Enable true sentence-by-sentence streaming for simple format while preserving the necessary fragment accumulation logic for JSON format. Each response format now uses the processing strategy appropriate for its structure.
+
+**Critical Analysis:**
+- The 75-character minimum was never appropriate for simple format
+- Connector's sentence splitting is more sophisticated than buffer accumulation
+- This change eliminates artificial batching and enables intended streaming behavior
+- JSON format protection maintained through conditional logic
+- Performance improvement: Sentences reach game/TTS faster, improving perceived responsiveness
+
+---
+

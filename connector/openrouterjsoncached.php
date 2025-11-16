@@ -9,7 +9,7 @@ require_once($enginePath . "lib" .DIRECTORY_SEPARATOR."tokenizer_helper_function
 class openrouterjsoncached
 {
     // ⚠️ IMPORTANT: Please update version number, date, and CHIM version after making changes
-    const VERSION = 'OpenRouter Cache Connector v1.3.2 for CHIM 2.0.3 | 2025/11/16';
+    const VERSION = 'OpenRouter Cache Connector v1.3.3 for CHIM 2.0.3 | 2025/11/16';
 
     public $primary_handler;
     public $name;
@@ -129,6 +129,12 @@ class openrouterjsoncached
         require_once(__DIR__."/openrouterjsoncached_helpers.php");
 
         logMessage("[{$this->name}] OpenRouter Cached Connector v" . self::VERSION . " initialized");
+    }
+
+    // Public method to check if connector handles sentence splitting internally
+    // Used by data_functions.php to bypass MINIMUM_SENTENCE_SIZE check for simple format
+    public function handlesSentenceSplitting() {
+        return ($this->_responseFormat === 'simple');
     }
 
     // Utility methods
