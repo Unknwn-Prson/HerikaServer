@@ -1,0 +1,85 @@
+CHIM Cached Connector v1.2.3 - Release Notes
+============================================
+Release Date: 2025-11-16
+Compatible with: CHIM 2.0.3
+
+OVERVIEW
+--------
+v1.2.3 fixes the minimize_quality_prompt implementation to work correctly for
+both JSON and Simple formats, using the proper quality instructions from
+dialogue_prompt.php.
+
+CHANGES FROM v1.2.2
+-------------------
+
+1. FIXED MINIMIZE_QUALITY_PROMPT FOR BOTH FORMATS
+   - Previously only worked for Simple format
+   - Now works for BOTH JSON and Simple formats
+   - Removed incorrect "Provide variety..." phrase
+   - Replaced with proper quality instructions from dialogue_prompt.php:
+     "Avoid narrations, be original, creative, knowledgeable, use your own
+      thoughts. Review dialogue history to focus on conversation topic and to
+      avoid repeating sentences and phraseology from previous dialog lines."
+
+2. CONSISTENT BEHAVIOR ACROSS FORMATS
+   When minimize_quality_prompt is ENABLED (checked - DEFAULT):
+   - Uses minimal instructions: "Write {NPC}'s next dialogue line."
+   - Recommended for advanced models (Claude 4.5, GPT-4, Gemini 2.0)
+
+   When minimize_quality_prompt is DISABLED (unchecked):
+   - Adds quality instructions from dialogue_prompt.php
+   - Same quality text for both JSON and Simple formats
+   - Recommended for older/smaller models needing explicit guidance
+
+3. IMPROVED VERSION DISPLAY
+   - Version display format changed to: "v1.2.3 for CHIM 2.0.3 | 2025/11/16"
+   - Shows version, CHIM compatibility, and date in one line
+   - Appears in both partial and main editor caching settings
+
+TECHNICAL DETAILS
+-----------------
+
+Modified Files:
+- connector/openrouterjsoncached.php
+  * Added quality instructions to JSON format when minimize_quality_prompt is disabled (lines 420-427)
+  * JSON format now respects the minimize_quality_prompt setting
+  * Updated VERSION to v1.2.3
+
+- connector/openrouterjsoncached_helpers.php
+  * Replaced "Provide variety..." phrase with dialogue_prompt.php quality instructions
+  * Simple format now uses same quality text as dialogue_prompt.php
+  * Matches JSON format behavior
+
+- ui/core/llm_connectors.php
+  * Updated version display format (lines 410, 1443)
+  * Shows "v1.2.3 for CHIM 2.0.3 | 2025/11/16"
+
+CONFIGURATION
+-------------
+
+The minimize_quality_prompt setting now affects:
+1. JSON format instructions (in connector)
+2. Simple format instructions (in connector)
+3. Dialogue prompts (via dialogue_prompt.php)
+
+All three now use the SAME quality instructions when the setting is disabled.
+
+UPGRADE NOTES
+-------------
+
+Users upgrading from v1.2.2:
+- The minimize_quality_prompt setting now works correctly for JSON format
+- "Provide variety..." phrase has been removed entirely
+- Quality instructions now match dialogue_prompt.php exactly
+- No configuration changes needed
+- All existing settings will continue to work
+
+COMPATIBILITY
+-------------
+
+✓ Works with CHIM 2.0.3
+✓ Compatible with all v1.2.2 configurations
+✓ Maintains backward compatibility with v1.2.0, v1.2.1, and v1.2.2
+
+For complete feature list and installation instructions, see INSTALLATION_INSTRUCTIONS.txt
+For detailed development history, see CLAUDE_changelog.md
