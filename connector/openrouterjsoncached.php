@@ -427,6 +427,15 @@ class openrouterjsoncached
             error_log("[{$this->name}] CRITICAL DEBUG - JSON format instruction created");
         } else {
             $prefixPart = trim(implode(' ', array_filter([$prefix, $speechReinforcement, $customInstruction], 'strlen')));
+
+            // DEBUG: Log all components
+            error_log("[{$this->name}] DEBUG - Building Simple Format Instruction:");
+            error_log("[{$this->name}]   \$prefix = " . var_export($prefix, true));
+            error_log("[{$this->name}]   \$speechReinforcement = " . var_export($speechReinforcement, true));
+            error_log("[{$this->name}]   \$customInstruction = " . var_export($customInstruction, true));
+            error_log("[{$this->name}]   \$prefixPart = " . var_export($prefixPart, true));
+            error_log("[{$this->name}]   \$minimizeQualityPrompt = " . var_export($minimizeQualityPrompt, true));
+
             $formatInstruction = buildSimpleFormatInstruction(
                 $this->_includeMood,
                 $this->_includeListener,
@@ -435,7 +444,9 @@ class openrouterjsoncached
                 $prefixPart,
                 $minimizeQualityPrompt
             );
+
             error_log("[{$this->name}] CRITICAL DEBUG - Simple format instruction created");
+            error_log("[{$this->name}]   \$formatInstruction = " . var_export($formatInstruction, true));
         }
 
         $actionsText = "";
@@ -553,7 +564,15 @@ class openrouterjsoncached
         if ($this->_responseFormat === 'simple' && !empty($formatInstruction)) {
             // Append format instruction to the instruction text
             $instructionText = is_array($instruction) && isset($instruction['text']) ? $instruction['text'] : $instruction;
+
+            error_log("[{$this->name}] DEBUG - Appending format instruction to user message:");
+            error_log("[{$this->name}]   BEFORE: " . var_export($instructionText, true));
+            error_log("[{$this->name}]   FORMAT INSTRUCTION TO ADD: " . var_export($formatInstruction, true));
+
             $instructionText .= ' ' . $formatInstruction;
+
+            error_log("[{$this->name}]   AFTER: " . var_export($instructionText, true));
+
             $instruction = is_array($instruction) ? ['type' => 'text', 'text' => $instructionText] : $instructionText;
         }
 
@@ -769,6 +788,26 @@ class openrouterjsoncached
         }
         $GLOBALS["DEBUG_DATA"]["full"] = ($data);
         $this->_dataSent = json_encode($data, JSON_PRETTY_PRINT);
+
+        // DEBUG: Log messages array to find where "Provide variety" is coming from
+        error_log("[{$this->name}] ===== FINAL PAYLOAD DEBUG =====");
+        error_log("[{$this->name}] Total messages: " . count($data['messages']));
+        foreach ($data['messages'] as $idx => $msg) {
+            error_log("[{$this->name}] Message [{$idx}]: role=" . ($msg['role'] ?? 'N/A'));
+            if (isset($msg['content']) && is_array($msg['content'])) {
+                foreach ($msg['content'] as $cidx => $contentItem) {
+                    if (isset($contentItem['text'])) {
+                        error_log("[{$this->name}]   Content[{$cidx}]: " . substr($contentItem['text'], 0, 200) . (strlen($contentItem['text']) > 200 ? '...' : ''));
+                        // Check if this contains the problematic phrase
+                        if (strpos($contentItem['text'], 'Provide variety in your responses') !== false) {
+                            error_log("[{$this->name}]   *** FOUND 'Provide variety' PHRASE IN THIS MESSAGE ***");
+                            error_log("[{$this->name}]   FULL TEXT: " . $contentItem['text']);
+                        }
+                    }
+                }
+            }
+        }
+        error_log("[{$this->name}] ===== END PAYLOAD DEBUG =====");
 
         try {
             $finalMsgCount = isset($finalMessagesToSend) ? count($finalMessagesToSend) : 0;
