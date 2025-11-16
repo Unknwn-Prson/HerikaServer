@@ -9,7 +9,7 @@ require_once($enginePath . "lib" .DIRECTORY_SEPARATOR."tokenizer_helper_function
 class openrouterjsoncached
 {
     // ⚠️ IMPORTANT: Please update version number, date, and CHIM version after making changes
-    const VERSION = 'OpenRouter Cache Connector v1.3.1 for CHIM 2.0.3 | 2025/11/16';
+    const VERSION = 'OpenRouter Cache Connector v1.3.2 for CHIM 2.0.3 | 2025/11/16';
 
     public $primary_handler;
     public $name;
@@ -424,11 +424,11 @@ class openrouterjsoncached
                 unset($template['listener']);
             }
 
-            $prefixPart = trim(implode(' ', array_filter([$prefix, $speechReinforcement, $customInstruction], 'strlen')));
+            $prefixPart = trim(implode(' ', array_filter([$prefix, $speechReinforcement], 'strlen')));
             $formatInstruction = "{$prefixPart} Use ONLY this JSON object to give your answer. Do not send any other characters outside of this JSON structure$zonosTones: " . json_encode($template);
             error_log("[{$this->name}] CRITICAL DEBUG - JSON format instruction created");
         } else {
-            $prefixPart = trim(implode(' ', array_filter([$prefix, $speechReinforcement, $customInstruction], 'strlen')));
+            $prefixPart = trim(implode(' ', array_filter([$prefix, $speechReinforcement], 'strlen')));
             $formatInstruction = buildSimpleFormatInstruction(
                 $this->_includeMood,
                 $this->_includeListener,
@@ -479,7 +479,9 @@ class openrouterjsoncached
                                      $combatStatus . "\n\n" . $arousal . "\n\n" . $equipment . "\n\n" .
                                      $appearance . "\n\n" . $cleanliness;
 
-                $finalSend = $systemContentCurrent . "\n" . $actionsText;
+                // Add custom system instruction before actions and format instruction (but after main system content)
+                $customInstructionPart = !empty($customInstruction) ? "\n" . $customInstruction : '';
+                $finalSend = $systemContentCurrent . $customInstructionPart . "\n" . $actionsText;
 
                 $content = ['type' => 'text', 'text' => $finalSend];
                 if ($this->_provider_caching !== "OpenAI") {
