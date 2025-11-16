@@ -512,6 +512,13 @@ function buildSimpleFormatInstruction($includeMood, $includeListener, $includeAc
     // Add quality instructions when minimize_quality_prompt is disabled
     if (!$minimizeQualityPrompt) {
         $instruction .= " Provide variety in your responses, avoid repeating the same phrases while still being consistent with the character and maintaining scene continuity.";
+        if (function_exists('logMessage')) {
+            logMessage("[buildSimpleFormatInstruction] Quality instructions ADDED (minimize_quality_prompt is disabled)");
+        }
+    } else {
+        if (function_exists('logMessage')) {
+            logMessage("[buildSimpleFormatInstruction] Quality instructions NOT added (minimize_quality_prompt is enabled/default)");
+        }
     }
 
     // Prepend custom instruction (if provided) to match JSON format behavior

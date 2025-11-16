@@ -312,6 +312,7 @@ class openrouterjsoncached
 
         // Get minimize_quality_prompt setting (default: true for minimized prompts)
         $minimizeQualityPrompt = isset($GLOBALS["CONNECTOR"][$this->name]["minimize_quality_prompt"]) ? (bool)$GLOBALS["CONNECTOR"][$this->name]["minimize_quality_prompt"] : true;
+        logMessage("[{$this->name}] minimize_quality_prompt setting: " . ($minimizeQualityPrompt ? 'true (minimized)' : 'false (full quality instructions)'));
 
         // Cache provider configuration
         $this->_provider_caching = isset($GLOBALS["CONNECTOR"][$this->name]["provider_caching"]) ? $GLOBALS["CONNECTOR"][$this->name]["provider_caching"] : "Anthropic";
