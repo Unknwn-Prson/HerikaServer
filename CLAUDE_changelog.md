@@ -659,3 +659,203 @@ Minimize package overwrites by ensuring only truly connector-specific files are 
 
 ---
 
+
+## Session: 2025-12-01 - REVISED Investigation (Correcting Previous Errors)
+
+### Entry 11: Thorough re-investigation after user feedback
+**Timestamp:** 2025-12-01 06:30 UTC
+**Version:** v1.3.3
+**Files:** INVESTIGATION_REPORT_Files_Audit_REVISED.md (created)
+**Previous Report:** INVESTIGATION_REPORT_Files_Audit.md (superseded)
+
+**User Feedback:**
+> "I feel like you should investigate again. There are definitely reasons that overwrites were made into all of those files. We should be thoroughly sure what the original reason for the overwrite was."
+
+**User was RIGHT - Initial investigation was incomplete.**
+
+**Errors in Previous Investigation:**
+1. ❌ Didn't check actual package contents - assumed files in git were in package
+2. ❌ Over-relied on grep searches - missed actual code changes
+3. ❌ Didn't trace full dependency chain - missed CHIM core dependencies
+4. ❌ Made incorrect recommendations based on incomplete analysis
+
+**Corrected Investigation Method:**
+1. ✅ Checked actual package directory contents (v1.1.22)
+2. ✅ Examined git commit diffs to see exact changes
+3. ✅ Traced where functions are called (connector AND CHIM core)
+4. ✅ Verified dependencies and requirements
+5. ✅ Tested proposed changes mentally to identify what would break
+
+---
+
+**CORRECTED FINDINGS:**
+
+**File 1: ui/events-memories.php**
+
+**Previous conclusion:** NOT connector-specific, remove from package
+**User concern:** Why was the overwrite made?
+
+**Investigation Results:**
+- ✅ Git commit c434c19f added bug fix for array content handling
+- ✅ Purpose: Fix crash when connector uses array format `[{type: 'text', text: '...'}]`
+- ✅ Checked package contents: `find CHIM_Cached_Connector_v1.1.22_package -name "events-memories.php"`
+- ✅ Result: **File NOT in package!**
+
+**What Actually Happened:**
+1. Bug fix was committed during development
+2. Decision was made to NOT include in distributed package
+3. This was the CORRECT decision - avoids overwriting large UI file for minor cosmetic fix
+
+**Corrected Conclusion:** ✅ **Already correctly excluded from package**
+**Action:** None needed - current state is correct
+
+---
+
+**File 2: lib/chat_helper_functions.php**
+
+**Previous conclusion:** Only 6% connector-specific, move functions then remove
+**User concern:** There must be a reason it was overwritten
+
+**Investigation Results:**
+
+**Git History Analysis:**
+```
+Commit a20b0fec: Add streaming reasoning token detection and filtering
+  - Added stripReasoningTokens() (29 lines)
+  - Added hasUnclosedReasoningMarker() (29 lines)  
+  - Added extractReasoningFreeContent() (38 lines)
+  - Modified lib/data_functions.php to call these functions
+  
+Commit 883b49a0: Fix critical reasoning bugs
+  - Modified extractReasoningFreeContent() to handle content before unclosed markers
+  
+Commit 8de741a6: Revert Bug #2 fix
+  - Reverted whitespace handling (roleplay needs single line)
+```
+
+**Functions Purpose:**
+- Strip reasoning markers like `<think>`, `<reasoning>`, `<thought>`, etc.
+- Prevent reasoning tokens from being sent to game/TTS
+- Enable thinking toggle feature for o1, o3, o4, DeepSeek-R1, etc.
+
+**Critical Discovery - CHIM Core Dependency:**
+
+**In lib/data_functions.php (CHIM CORE streaming loop):**
+```php
+Line ~2978: $reasoningFreeBuffer = extractReasoningFreeContent($buffer);
+Line ~2987: $buffer = $reasoningFreeBuffer;
+Line ~3035: $buffer = stripReasoningTokens($buffer);
+```
+
+**This is the KEY FINDING I missed:**
+The reasoning functions are NOT just called by the connector - they're called by CHIM's main streaming loop in lib/data_functions.php!
+
+**Dependency Chain:**
+```
+CHIM Core (lib/data_functions.php)
+  └─> Calls extractReasoningFreeContent() in streaming loop
+      └─> Must exist in lib/chat_helper_functions.php
+          └─> CHIM core requires this file
+              └─> Cannot move to connector helpers
+                  └─> CHIM core wouldn't have access
+                      └─> Fatal error: undefined function
+```
+
+**Why Previous Recommendation Was Wrong:**
+- Suggested moving functions to connector helpers
+- Didn't realize CHIM core calls them
+- Would cause fatal error: `Call to undefined function extractReasoningFreeContent()`
+- Would break ALL connector functionality, not just thinking mode
+
+**Corrected Conclusion:** ✅ **MUST keep in package** (essential for CHIM core)
+
+**Why It Must Stay:**
+1. CHIM core streaming loop depends on these functions
+2. Functions were added FOR this connector (didn't exist before)
+3. Without this file, thinking toggle doesn't work
+4. Without this file, CHIM crashes with undefined function error
+
+**Options:**
+1. ✅ Keep in package (current, works now)
+2. ✅ Submit to CHIM core (benefits everyone, long-term)  
+3. ✅ Hybrid: Keep now, submit to CHIM, remove once merged
+
+**Recommended Approach:** **Option 3 - Hybrid**
+- Short-term: Keep in package (essential now)
+- Medium-term: Create PR to CHIM core
+- Long-term: Remove from package once merged to CHIM upstream
+
+---
+
+**Package Contents Verification:**
+
+```bash
+$ find CHIM_Cached_Connector_v1.1.22_package -type f
+```
+
+**13 files total:**
+1. connector/openrouterjsoncached.php
+2. connector/openrouterjsoncached_verbose.php
+3. ui/core/llm_connectors.php
+4. ui/core/tmpl/metadata_json_editor.php
+5. lib/core/llm_connector.class.php
+6. lib/chat_helper_functions.php ← **ESSENTIAL**
+7. prompts/dialogue_prompt.php
+8. functions/functions.php
+9. functions/json_response.php
+10-13. Documentation files
+
+**NOT in package:**
+- ✅ ui/events-memories.php (correctly excluded)
+- ✅ connector/OPENROUTERJSONCACHED_README.md (correctly excluded)
+
+---
+
+**Revised Recommendations:**
+
+**ui/events-memories.php:**
+- Previous: Remove from package
+- Corrected: ✅ **Already not in package - no action needed**
+
+**lib/chat_helper_functions.php:**
+- Previous: Move functions, then remove from package
+- Corrected: ✅ **Keep in package (essential)** + Submit to CHIM core (long-term)
+
+**Impact on File Count:**
+- Previous estimate: Could reduce to 6 files
+- Corrected: Minimum is 6 core files (lib/chat_helper_functions.php is one of them)
+- Possible optimizations: Remove verbose connector, some docs
+- Target: ~10-11 files (down from 13)
+
+---
+
+**Conceptual Goal:**
+Previous goal was "minimize overwrites by moving connector code out of CHIM files." This was correct in principle but missed that:
+1. Some CHIM modifications benefit the ecosystem (reasoning functions)
+2. CHIM core now depends on connector features
+3. Better long-term solution: Submit features to CHIM upstream
+
+**New Conceptual Goal:**
+Minimize overwrites by contributing connector features to CHIM core, then removing from package once merged. This benefits everyone and achieves zero overwrites long-term.
+
+**Critical Analysis:**
+- User was right to question the investigation
+- Initial analysis was too superficial (grep-based instead of code-based)
+- Didn't check package contents vs git history
+- Didn't trace full dependency chain through CHIM core
+- Made recommendations that would have broken the connector
+
+**Lessons Learned:**
+1. Always check actual package contents, not just git history
+2. Trace dependencies through ALL code (connector AND CHIM core)
+3. Read commit diffs, not just commit messages
+4. Mentally test proposed changes before recommending
+5. When user questions findings, re-investigate thoroughly
+
+**Next Steps:**
+1. ✅ Document corrected findings (INVESTIGATION_REPORT_Files_Audit_REVISED.md)
+2. ⏳ Consider submitting reasoning functions to CHIM core (future)
+3. ⏳ Investigate other file optimizations (verbose connector, docs, etc.)
+
+---
+
