@@ -37,12 +37,6 @@ if (file_exists($enginePath . 'connector/openrouterjsoncached.php')) {
         $cachedConnectorVersion = defined('openrouterjsoncached::VERSION') ? openrouterjsoncached::VERSION : '';
     }
 }
-if (file_exists($enginePath . 'connector/openrouterjsoncached_verbose.php')) {
-    require_once($enginePath . 'connector/openrouterjsoncached_verbose.php');
-    if (class_exists('openrouterjsoncached_verbose')) {
-        $cachedConnectorVersionVerbose = defined('openrouterjsoncached_verbose::VERSION') ? openrouterjsoncached_verbose::VERSION : '';
-    }
-}
 
 // Early Export CSV handler (must run before any output)
 if (isset($_GET["export"])) {
@@ -322,7 +316,6 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
                     <select id="driver_select" style="display:none">
                         <option value="openrouterjson">OpenRouter JSON</option>
                         <option value="openrouterjsoncached">OpenRouter JSON (Cached)</option>
-                        <option value="openrouterjsoncached_verbose">OpenRouter JSON (Cached + Verbose Logging)</option>
                         <option value="openaijson">OpenAI JSON</option>
                         <option value="google_openaijson">Google OpenAI JSON</option>
                     </select>
@@ -706,7 +699,7 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
             const responseFormatSelect = document.getElementById('response_format');
 
             // Show caching settings only for cached drivers
-            const isCachedDriver = driver === 'openrouterjsoncached' || driver === 'openrouterjsoncached_verbose';
+            const isCachedDriver = driver === 'openrouterjsoncached';
             if (cachingSettings) cachingSettings.style.display = isCachedDriver ? '' : 'none';
 
             // Update connector version display
@@ -714,15 +707,10 @@ if (isset($_GET["partial"]) && $_GET["partial"] === "editor") {
             if (versionDiv) {
                 if (driver === 'openrouterjsoncached') {
                     versionDiv.textContent = <?= json_encode($cachedConnectorVersion) ?>;
-                } else if (driver === 'openrouterjsoncached_verbose') {
-                    versionDiv.textContent = <?= json_encode($cachedConnectorVersionVerbose) ?>;
                 } else {
                     versionDiv.textContent = '';
                 }
             }
-
-            // Show verbose logging option only for verbose driver
-            if (verboseLoggingOption) verboseLoggingOption.style.display = (driver === 'openrouterjsoncached_verbose') ? '' : 'none';
 
             // Show simple format options based on response_format selection
             if (responseFormatSelect && simpleFormatOptions) {
@@ -1405,7 +1393,6 @@ if (typeof window.consolidation !== 'function') {
                 <select id="driver_select">
                     <option value="openrouterjson">OpenRouter JSON</option>
                     <option value="openrouterjsoncached">OpenRouter JSON (Cached)</option>
-                    <option value="openrouterjsoncached_verbose">OpenRouter JSON (Cached + Verbose Logging)</option>
                     <option value="openaijson">OpenAI JSON</option>
                     <option value="google_openaijson">Google OpenAI JSON</option>
                 </select>
@@ -1774,7 +1761,7 @@ function updateCachingSettingsMain(){
     const responseFormatSelect = document.getElementById('response_format_main');
 
     // Show caching settings only for cached drivers
-    const isCachedDriver = driver === 'openrouterjsoncached' || driver === 'openrouterjsoncached_verbose';
+    const isCachedDriver = driver === 'openrouterjsoncached';
     if (cachingSettings) cachingSettings.style.display = isCachedDriver ? '' : 'none';
 
     // Update connector version display
@@ -1782,15 +1769,10 @@ function updateCachingSettingsMain(){
     if (versionDiv) {
         if (driver === 'openrouterjsoncached') {
             versionDiv.textContent = <?= json_encode($cachedConnectorVersion) ?>;
-        } else if (driver === 'openrouterjsoncached_verbose') {
-            versionDiv.textContent = <?= json_encode($cachedConnectorVersionVerbose) ?>;
         } else {
             versionDiv.textContent = '';
         }
     }
-
-    // Show verbose logging option only for verbose driver
-    if (verboseLoggingOption) verboseLoggingOption.style.display = (driver === 'openrouterjsoncached_verbose') ? '' : 'none';
 
     // Show simple format options based on response_format selection
     if (responseFormatSelect && simpleFormatOptions) {
