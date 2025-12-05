@@ -6,8 +6,8 @@ VERSION 1.4.0 - 2025-12-01
 ================================================================================
 
 PACKAGE OPTIMIZATION:
-- Reduced package from 13 files to 7 files (-46% file count)
-- Reduced package size from 513 KB to 352 KB (-31% size)
+- Reduced package from 13 files to 10 files (-23% file count)
+- Reduced package size from 513 KB to 372 KB (-27% size)
 - Removed all non-essential file overwrites
 - Zero functionality loss
 
@@ -33,14 +33,17 @@ DOCUMENTATION:
 - "Coconut principle" applied - documented all changes thoroughly
 - Created METADATA_JSON_EDITOR_CHANGE_DOCUMENTATION.md for reference
 
-FILES IN THIS PACKAGE (7 files, 352 KB):
+FILES IN THIS PACKAGE (10 files, 372 KB):
 ✓ connector/openrouterjsoncached.php (70 KB) - Main connector
+✓ connector/openrouterjsoncached_helpers.php (20 KB) - Helper functions
 ✓ functions/functions.php (32 KB) - Core functions
 ✓ functions/json_response.php (17 KB) - Response handling
 ✓ lib/chat_helper_functions.php (69 KB) - Reasoning functions
 ✓ lib/core/llm_connector.class.php (18 KB) - Metadata handling
 ✓ ui/core/llm_connectors.php (154 KB) - Config UI (updated)
 ✓ prompts/dialogue_prompt.php (5.7 KB) - minimize_quality_prompt
+✓ INSTALLATION_INSTRUCTIONS.txt (12 KB) - Install guide
+✓ CHANGELOG.txt (11 KB) - Version history
 
 ALL FEATURES PRESERVED:
 ✓ Thinking toggle for reasoning models

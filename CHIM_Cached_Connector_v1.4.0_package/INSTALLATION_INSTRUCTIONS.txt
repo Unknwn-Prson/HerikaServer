@@ -19,8 +19,9 @@ INSTALLATION STEPS
    - When prompted, allow files to overwrite existing files
    - This is normal and expected
 
-3. FILES THAT WILL BE OVERWRITTEN (7 files)
+3. FILES THAT WILL BE OVERWRITTEN (8 files)
    - connector/openrouterjsoncached.php
+   - connector/openrouterjsoncached_helpers.php
    - functions/functions.php
    - functions/json_response.php
    - lib/chat_helper_functions.php
@@ -45,8 +46,8 @@ WHAT'S NEW IN v1.4.0
 ================================================================================
 
 PACKAGE OPTIMIZATION:
-- Reduced from 13 files to 7 files (-46%)
-- Reduced package size from 513 KB to 352 KB (-31%)
+- Reduced from 13 files to 10 files (-23%)
+- Reduced package size from 513 KB to 372 KB (-27%)
 - Removed non-essential file overwrites
 - Zero functionality loss
 
@@ -101,7 +102,7 @@ THINKING TOGGLE NOT SAVING:
 - Check JavaScript console for errors (F12)
 
 ERRORS IN CHIM LOGS:
-- Check that all 7 files were copied correctly
+- Check that all 8 files were copied correctly
 - Verify file permissions (should be readable by web server)
 - Check CHIM error logs for details
 
