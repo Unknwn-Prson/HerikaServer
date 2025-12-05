@@ -1,0 +1,150 @@
+================================================================================
+CHIM CACHED CONNECTOR - VERSION HISTORY
+================================================================================
+
+VERSION 1.4.0 - 2025-12-01
+================================================================================
+
+PACKAGE OPTIMIZATION:
+- Reduced package from 13 files to 7 files (-46% file count)
+- Reduced package size from 513 KB to 352 KB (-31% size)
+- Removed all non-essential file overwrites
+- Zero functionality loss
+
+REMOVED FROM PACKAGE:
+- connector/openrouterjsoncached_verbose.php (97 KB)
+  Reason: Never worked properly, user confirmed broken
+- CHIM_CACHED_CONNECTOR_v1.1.21_SUMMARY.md (20 KB)
+  Reason: Outdated documentation
+- ui/core/tmpl/metadata_json_editor.php (24 KB)
+  Reason: Only removed debugger statement (developer convenience)
+- ZIP_FILE_INFO.txt (20 KB)
+  Reason: Redundant information
+
+BUG FIXES:
+- Removed all references to broken verbose connector from llm_connectors.php
+  - Removed from dropdown options (2 locations)
+  - Removed from version checks (2 locations)
+  - Removed from driver conditional logic (4 locations)
+  - Total: 8 locations cleaned up
+
+DOCUMENTATION:
+- Created comprehensive change documentation
+- "Coconut principle" applied - documented all changes thoroughly
+- Created METADATA_JSON_EDITOR_CHANGE_DOCUMENTATION.md for reference
+
+FILES IN THIS PACKAGE (7 files, 352 KB):
+✓ connector/openrouterjsoncached.php (70 KB) - Main connector
+✓ functions/functions.php (32 KB) - Core functions
+✓ functions/json_response.php (17 KB) - Response handling
+✓ lib/chat_helper_functions.php (69 KB) - Reasoning functions
+✓ lib/core/llm_connector.class.php (18 KB) - Metadata handling
+✓ ui/core/llm_connectors.php (154 KB) - Config UI (updated)
+✓ prompts/dialogue_prompt.php (5.7 KB) - minimize_quality_prompt
+
+ALL FEATURES PRESERVED:
+✓ Thinking toggle for reasoning models
+✓ Reasoning token filtering
+✓ Provider caching support
+✓ Simple and JSON response formats
+✓ minimize_quality_prompt feature
+✓ Full streaming support
+
+TESTING VERIFIED:
+✓ Package installation successful
+✓ Connector appears in dropdown correctly
+✓ No verbose connector option (correctly removed)
+✓ All settings save correctly
+✓ Thinking toggle works
+✓ Streaming works
+✓ No JavaScript errors
+
+================================================================================
+
+VERSION 1.3.3 - 2025-11-20
+================================================================================
+
+CRITICAL PERFORMANCE FIX:
+- Removed MINIMUM_SENTENCE_SIZE bottleneck for simple format streaming
+
+CHANGES:
+- Added handlesSentenceSplitting() method to connector class
+- Modified lib/data_functions.php to bypass 75-char minimum for simple format
+- Enables true sentence-by-sentence streaming
+- JSON format unchanged and protected
+
+IMPACT:
+- Sentences stream to game/TTS immediately (no artificial batching)
+- Significantly improved perceived responsiveness
+- Better user experience with streaming models
+
+================================================================================
+
+VERSION 1.1.22 - 2025-11-15
+================================================================================
+
+CRITICAL BUG FIX - THINKING TOGGLE NOT SAVING:
+- Fixed missing name attributes on thinking toggle form fields
+- Added name="metadata[toggle_thinking]" to checkbox
+- Added name="metadata[thinking_tokens]" to number input
+- Added name="metadata[effort_level]" to dropdown
+
+CHANGES:
+- ui/core/llm_connectors.php: Added missing metadata textarea and JSON editor
+- ui/core/tmpl/metadata_json_editor.php: Removed debugger statement
+
+TESTING VERIFIED:
+✓ Thinking toggle checkbox saves correctly
+✓ Thinking tokens value saves correctly
+✓ Effort level selection saves correctly
+✓ Settings persist after page reload
+
+================================================================================
+
+VERSION 1.1.20 - 2025-11-15
+================================================================================
+
+BUG FIX - THINKING TOGGLE CONFLICT:
+- Fixed thinking toggle not working with simple format
+- Moved format instructions to user prompt (away from prefill)
+- Prevents conflict between thinking prefill and format prefill
+
+================================================================================
+
+VERSION 1.1.18 - 2025-11-14
+================================================================================
+
+BUG FIX - COLON STRIPPING:
+- Removed ALL colon stripping logic from simple format
+- Simple format specification REQUIRES leading colons in action descriptions
+- Format: (mood)(listener)(action)(target): message
+
+================================================================================
+
+VERSION 1.1.12 - 2025-11-13
+================================================================================
+
+NEW FEATURE - minimize_quality_prompt:
+- Implemented minimize_quality_prompt setting functionality
+- If enabled: Uses minimized template "Write {NPC}'s next dialogue line."
+- If disabled: Uses full template with quality instructions
+- Recommended for advanced models (Claude 3.5+, GPT-4+, Gemini 2.0)
+- Can reduce prompt tokens by 200-400 tokens
+
+CHANGES:
+- prompts/dialogue_prompt.php: Added conditional logic for quality prompt
+
+================================================================================
+
+VERSION 1.0.12 - 2025-11-06
+================================================================================
+
+INITIAL DOCUMENTED RELEASE:
+- Full rebuild from earlier versions
+- Added comprehensive thinking toggle support
+- Provider caching for Anthropic, OpenAI, Google
+- Simple and JSON response formats
+- Streaming support
+- Configuration UI integration
+
+================================================================================

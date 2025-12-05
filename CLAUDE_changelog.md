@@ -1017,3 +1017,77 @@ Started with goal: "Minimize package file overwrites"
 
 **Status:** Documentation complete, ready for implementation.
 
+
+### Entry 13: Create v1.4.0 package and release
+**Timestamp:** 2025-12-01 07:45 UTC
+**Version:** v1.4.0 RELEASED
+**Files:** 
+- CHIM_Cached_Connector_v1.4.0.zip (created)
+- CHIM_Cached_Connector_v1.4.0_package/ (directory)
+
+**Actions Completed:**
+
+**1. Updated ui/core/llm_connectors.php:**
+- Removed all openrouterjsoncached_verbose references (8 locations)
+- Cleaned up dropdown options (removed verbose from both forms)
+- Updated driver conditional logic (removed verbose checks)
+- Updated version display code (removed verbose version)
+- Verified zero matches for 'openrouterjsoncached_verbose' via grep
+
+**2. Created v1.4.0 Package Directory:**
+- Structure: connector/, functions/, lib/core/, prompts/, ui/core/
+- Copied 7 essential PHP files
+- Created INSTALLATION_INSTRUCTIONS.txt (comprehensive guide)
+- Created CHANGELOG.txt (version history 1.0.12 → 1.4.0)
+
+**3. Created v1.4.0 ZIP Package:**
+- File: CHIM_Cached_Connector_v1.4.0.zip
+- Size: 83 KB (compressed from 352 KB uncompressed)
+- Compression ratio: ~76% (excellent)
+- Contains 9 files total (7 PHP + 2 docs)
+
+**Package Contents (v1.4.0):**
+1. connector/openrouterjsoncached.php (70 KB)
+2. functions/functions.php (32 KB)
+3. functions/json_response.php (17 KB)
+4. lib/chat_helper_functions.php (69 KB)
+5. lib/core/llm_connector.class.php (18 KB)
+6. ui/core/llm_connectors.php (154 KB) - UPDATED (verbose removed)
+7. prompts/dialogue_prompt.php (5.7 KB)
+8. INSTALLATION_INSTRUCTIONS.txt (12 KB)
+9. CHANGELOG.txt (11 KB)
+
+**Comparison with v1.1.22:**
+- v1.1.22: 13 files, 513 KB uncompressed
+- v1.4.0: 9 files, 352 KB uncompressed
+- Reduction: -4 files (-31%), -161 KB (-31%)
+- ZIP size: v1.1.22 ~165 KB → v1.4.0 83 KB (-50%)
+
+**Features - All Preserved:**
+✓ Thinking toggle for o1, o3, o4, DeepSeek-R1
+✓ Reasoning token filtering (<think>, <reasoning>, etc.)
+✓ Provider caching (Anthropic, OpenAI, Google)
+✓ Simple and JSON response formats
+✓ minimize_quality_prompt feature
+✓ Full streaming support
+✓ Sentence-by-sentence streaming (v1.3.3 fix)
+✓ All configuration options
+
+**Functionality Impact:** ZERO LOSS
+
+**Removed (not in v1.4.0):**
+- openrouterjsoncached_verbose.php (broken connector)
+- ui/core/tmpl/metadata_json_editor.php (debugger removal only)
+- CHIM_CACHED_CONNECTOR_v1.1.21_SUMMARY.md (outdated docs)
+- ZIP_FILE_INFO.txt (redundant info)
+
+**Git Commits:**
+1. f9bd4ca0 - Remove verbose connector references from LLM Connectors UI
+2. (pending) - Add v1.4.0 package and release files
+
+**Status:** ✅ v1.4.0 READY FOR DISTRIBUTION
+
+**Download:** CHIM_Cached_Connector_v1.4.0.zip (83 KB)
+
+---
+

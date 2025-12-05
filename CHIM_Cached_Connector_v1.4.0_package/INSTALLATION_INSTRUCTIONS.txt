@@ -1,0 +1,135 @@
+================================================================================
+CHIM CACHED CONNECTOR v1.4.0 - INSTALLATION INSTRUCTIONS
+================================================================================
+
+Package: CHIM_Cached_Connector_v1.4.0.zip
+Release Date: 2025-12-01
+CHIM Compatibility: v2.0.3 and later
+
+================================================================================
+INSTALLATION STEPS
+================================================================================
+
+1. BACKUP YOUR CURRENT INSTALLATION
+   - IMPORTANT: Always backup your HerikaServer directory before installing
+   - Especially important if you've made custom modifications
+
+2. EXTRACT THIS ZIP FILE
+   - Extract all files to your HerikaServer root directory
+   - When prompted, allow files to overwrite existing files
+   - This is normal and expected
+
+3. FILES THAT WILL BE OVERWRITTEN (7 files)
+   - connector/openrouterjsoncached.php
+   - functions/functions.php
+   - functions/json_response.php
+   - lib/chat_helper_functions.php
+   - lib/core/llm_connector.class.php
+   - ui/core/llm_connectors.php
+   - prompts/dialogue_prompt.php
+
+4. RESTART YOUR WEB SERVER (if applicable)
+   - Apache: sudo systemctl restart apache2
+   - Nginx: sudo systemctl restart nginx
+   - XAMPP: Restart from control panel
+   - Local dev: No restart needed usually
+
+5. VERIFY INSTALLATION
+   - Navigate to your CHIM web interface
+   - Go to Configuration → LLM Connectors
+   - You should see: "OpenRouter JSON (Cached)" in the driver dropdown
+   - Version should display: "OpenRouter Cache Connector v1.4.0..."
+
+================================================================================
+WHAT'S NEW IN v1.4.0
+================================================================================
+
+PACKAGE OPTIMIZATION:
+- Reduced from 13 files to 7 files (-46%)
+- Reduced package size from 513 KB to 352 KB (-31%)
+- Removed non-essential file overwrites
+- Zero functionality loss
+
+REMOVED FROM PACKAGE:
+- openrouterjsoncached_verbose.php (broken verbose connector)
+- ui/core/tmpl/metadata_json_editor.php (minor developer fix)
+- Outdated documentation files
+
+BUG FIXES:
+- Updated ui/core/llm_connectors.php to remove broken verbose connector references
+- Cleaned up connector dropdown options
+
+ALL FEATURES PRESERVED:
+✓ Thinking toggle (o1, o3, o4, DeepSeek-R1 support)
+✓ Reasoning token filtering (<think>, <reasoning>, etc.)
+✓ Minimize quality prompt feature
+✓ Provider caching support (Anthropic, OpenAI, Google)
+✓ Simple and JSON response formats
+✓ Full streaming support
+✓ All configuration options
+
+================================================================================
+CONFIGURATION
+================================================================================
+
+After installation:
+
+1. Navigate to: Configuration → LLM Connectors
+2. Add a new connector or edit existing
+3. Set Driver to: "OpenRouter JSON (Cached)"
+4. Configure your settings:
+   - API Key: Your OpenRouter API key
+   - Model Name: e.g., anthropic/claude-3.5-sonnet
+   - Response Format: "simple" or "json"
+   - Toggle Thinking: Enable for reasoning models
+   - Provider Caching: Enable for cost savings
+
+For detailed configuration guide, see CHIM documentation.
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+CONNECTOR DOESN'T APPEAR IN DROPDOWN:
+- Clear your browser cache (Ctrl+Shift+R)
+- Restart web server
+- Check that files extracted to correct location
+
+THINKING TOGGLE NOT SAVING:
+- This was fixed in v1.1.22, should work in v1.4.0
+- If issue persists, clear browser cache
+- Check JavaScript console for errors (F12)
+
+ERRORS IN CHIM LOGS:
+- Check that all 7 files were copied correctly
+- Verify file permissions (should be readable by web server)
+- Check CHIM error logs for details
+
+CACHING NOT WORKING:
+- Provider caching requires provider support:
+  ✓ Anthropic (Claude): Supported
+  ✓ OpenAI (GPT-4+): Supported
+  ✓ Google (Gemini): Supported
+  ✗ Other providers: Not supported
+- Enable "Provider Caching" toggle in connector settings
+
+================================================================================
+SUPPORT
+================================================================================
+
+For issues, questions, or feature requests:
+- GitHub: https://github.com/Unknwn-Prson/HerikaServer
+- Report bugs with:
+  - CHIM version
+  - Connector version (v1.4.0)
+  - Error messages from logs
+  - Steps to reproduce
+
+================================================================================
+LICENSE
+================================================================================
+
+This connector is provided as-is for use with the CHIM (Herika) framework.
+See CHIM project license for terms.
+
+================================================================================
