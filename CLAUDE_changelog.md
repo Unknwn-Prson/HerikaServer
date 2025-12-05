@@ -1091,3 +1091,83 @@ Started with goal: "Minimize package file overwrites"
 
 ---
 
+
+### Entry 14: CRITICAL FIX - Add missing openrouterjsoncached_helpers.php
+**Timestamp:** 2025-12-01 08:05 UTC
+**Version:** v1.4.0 (corrected)
+**Severity:** CRITICAL - Package was broken without this file
+
+**Problem Discovered:**
+User found that v1.4.0 package was missing `connector/openrouterjsoncached_helpers.php`
+- Main connector requires it at line 129: `require_once(__DIR__."/openrouterjsoncached_helpers.php");`
+- Package would fail immediately on installation with "file not found" error
+- This was a critical oversight in Entry 13
+
+**Files Modified:**
+1. **CHIM_Cached_Connector_v1.4.0_package/connector/openrouterjsoncached_helpers.php**
+   - Action: ADDED (was missing)
+   - Size: 20 KB
+   - Content: Helper functions for connector (logMessage, caching, parsing, etc.)
+
+2. **CHIM_Cached_Connector_v1.4.0_package/INSTALLATION_INSTRUCTIONS.txt**
+   - Updated line 22: "7 files" → "8 files"
+   - Updated line 24: Added openrouterjsoncached_helpers.php to list
+   - Updated line 48-49: "7 files" → "10 files", "352 KB" → "372 KB"
+   - Updated line 105: "7 files" → "8 files"
+
+3. **CHIM_Cached_Connector_v1.4.0_package/CHANGELOG.txt**
+   - Updated lines 9-10: Corrected file counts and sizes
+   - Updated lines 36-46: Added helpers file and documentation files to list
+
+4. **CHIM_Cached_Connector_v1.4.0.zip**
+   - Recreated with all 10 files
+   - New size: 88 KB (was 83 KB)
+   - New MD5: ad8f9979f6bdcbc3310763d564d6ccf4
+
+**Corrected Package Contents (v1.4.0 FINAL):**
+1. connector/openrouterjsoncached.php (70 KB)
+2. connector/openrouterjsoncached_helpers.php (20 KB) ← FIXED
+3. functions/functions.php (32 KB)
+4. functions/json_response.php (17 KB)
+5. lib/chat_helper_functions.php (69 KB)
+6. lib/core/llm_connector.class.php (18 KB)
+7. ui/core/llm_connectors.php (154 KB)
+8. prompts/dialogue_prompt.php (5.7 KB)
+9. INSTALLATION_INSTRUCTIONS.txt (12 KB)
+10. CHANGELOG.txt (11 KB)
+
+**Corrected Statistics:**
+- Total files: 10 (not 9)
+- PHP files: 8 (not 7)
+- Documentation files: 2
+- Uncompressed size: ~372 KB (not 352 KB)
+- Compressed size: 88 KB (not 83 KB)
+- Reduction from v1.1.22: 13→10 files (-23%, not -31%)
+
+**What openrouterjsoncached_helpers.php Contains:**
+- logMessage() - Logging to cache.log
+- removeDuplicateMemories() - Memory deduplication
+- manageCharacterEventList() - Dialogue history caching
+- writeArrayToFileWithCache() - System prompt caching
+- extractSimpleFormatFromBuffer() - Simple format parsing
+- buildSimpleFormatInstruction() - Format instruction builder
+- extractJson() - JSON extraction from buffers
+- validateActionName() - Action validation
+- Plus 8 more utility functions
+
+**Why This Was Critical:**
+- Without this file, connector crashes immediately on instantiation
+- Error would be: "require_once(openrouterjsoncached_helpers.php): Failed to open stream"
+- No user could have successfully used the broken package
+- This was caught before distribution (thankfully!)
+
+**Git Commit:**
+- 0b2c70ad - Fix v1.4.0 package - Add missing openrouterjsoncached_helpers.php
+
+**Status:** ✅ v1.4.0 NOW COMPLETE AND FUNCTIONAL
+
+**Download:** CHIM_Cached_Connector_v1.4.0.zip (88 KB, MD5: ad8f9979f6bdcbc3310763d564d6ccf4)
+
+**Lesson Learned:** Always verify package against actual require_once/include statements in code!
+
+---
